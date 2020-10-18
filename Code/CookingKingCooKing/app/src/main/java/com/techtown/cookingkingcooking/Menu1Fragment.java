@@ -20,11 +20,16 @@ public class Menu1Fragment extends Fragment
                              Bundle savedInstanceState) {
         rootView = (ViewGroup) inflater.inflate(R.layout.fragment_menu1, container, false);;
 
-        recipes = new LinearLayout[]{(LinearLayout) rootView.findViewById(R.id.recipe1), (LinearLayout) rootView.findViewById(R.id.recipe2)};
+        recipes = new LinearLayout[]{rootView.findViewById(R.id.recipe1),
+                rootView.findViewById(R.id.recipe2),
+                rootView.findViewById(R.id.recipe3)};
 
-        for(int i=0; i<5; i++)
+        for(int i=0; i<recipes.length; i++)
         {
-            makeImageView(recipes[0], i);
+            for(int k=0; k<5; k++)
+            {
+                makeImageView(recipes[i], i+k);
+            }
         }
 
         return rootView;
@@ -33,9 +38,8 @@ public class Menu1Fragment extends Fragment
     private void makeImageView(LinearLayout root, int id)
     {
         ImageView iv = new ImageView(getContext());
-        iv.setImageResource(R.drawable.ic_launcher_foreground);
+        iv.setImageResource(R.drawable.ic_launcher_foreground); //사진을 추후에 추가(지금은 기본 내장된 사진으로 대체)
         iv.setId(id);
-        iv.setMaxWidth(100);
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lp.setMargins(10,10,10,10);

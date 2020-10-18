@@ -27,6 +27,7 @@
                 android:textStyle="bold"
                 android:gravity="center"/>
 
+
             <HorizontalScrollView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
@@ -38,9 +39,7 @@
                     android:orientation="horizontal"
                     android:layout_margin="10dp"
                     android:id="@+id/recipe1">
-
                 </LinearLayout>
-
 
 
             </HorizontalScrollView>
@@ -56,42 +55,21 @@
                     android:orientation="horizontal"
                     android:layout_margin="10dp"
                     android:id="@+id/recipe2">
+                </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/food6"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_launcher_foreground"/>
+            </HorizontalScrollView>
 
-                    <ImageView
-                        android:id="@+id/food7"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_launcher_foreground"/>
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/recipeBox3">
 
-                    <ImageView
-                        android:id="@+id/food8"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_launcher_foreground"/>
-
-                    <ImageView
-                        android:id="@+id/food9"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_launcher_foreground" />
-
-                    <ImageView
-                        android:id="@+id/food10"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_margin="10dp"
-                        android:src="@drawable/ic_launcher_foreground" />
-
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:layout_margin="10dp"
+                    android:id="@+id/recipe3">
                 </LinearLayout>
 
             </HorizontalScrollView>
