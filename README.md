@@ -49,3 +49,7 @@ private void makeImageView(LinearLayout root, int id)
 ### 2020.10.22, JSY
 Open_API_Parsing 브랜치 생성<br>
 브랜치 내용은 해당 브랜치에서 상세설명
+
+Main 브랜치 뼈대작업 초기화 후 새로운 main 코드 생성(CookingKingCooKing_Ver2)<br>API 연동 브랜치도 삭제 후 다시 생성 할 예정<br>코드 자체는 변한게 없고 mainActivity에서 화면을 구성하게 끔 함
+
+<img src="https://user-images.githubusercontent.com/28241676/96895242-2d8a0700-14c7-11eb-9816-3b583f7180f1.png" alt="Screenshot_1603380695" style="zoom:25%;" />
