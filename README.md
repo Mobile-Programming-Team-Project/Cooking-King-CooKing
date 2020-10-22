@@ -43,3 +43,9 @@ private void makeImageView(LinearLayout root, int id)
 ```
 
 <img src="https://user-images.githubusercontent.com/28241676/96371295-f69cb400-119b-11eb-86e5-66ca390cde0a.png" alt="Screenshot_1603031920" style="zoom:25%;" />
+
+
+
+### 2020.10.22, JSY
+Open_API_Parsing 브랜치 생성
+브랜치 내용은 해당 브랜치에서 상세설명
