@@ -47,5 +47,5 @@ private void makeImageView(LinearLayout root, int id)
 
 
 ### 2020.10.22, JSY
-Open_API_Parsing 브랜치 생성
+Open_API_Parsing 브랜치 생성<br>
 브랜치 내용은 해당 브랜치에서 상세설명
