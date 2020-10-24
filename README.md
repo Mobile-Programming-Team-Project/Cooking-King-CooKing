@@ -156,3 +156,10 @@ private class GetXMLTask extends AsyncTask<String, Void, Document> {
 
 * 해당 API는 http://www.foodsafetykorea.go.kr/api/openApiInfo.do?menu_grp=MENU_GRP31&menu_no=661&show_cnt=10&start_idx=1&svc_no=COOKRCP01 에서 받아왔음.
 * 추후에는 네이버나 Google의 검색 API를 받아와서 표시하는 방안을 생각중임.
+
+
+
+#### 해당 브랜치에서 추가할 기능
+
+* 초기화면에서 그림을 클릭하면 레시피에 대한 자세한 정보를 볼 수 있는 Activity 출력
+* 검색 시 관련된 정보를 보이는 Activity 출력
