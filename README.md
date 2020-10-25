@@ -1,4 +1,5 @@
-# Cooking-King-CooKing
+
+
 [TOC]
 
 국민대학교 소프트웨어학과 모바일프로그래밍 팀 프로젝트입니다.<br>	팀원<br>		* 20171706 조상연<br>		* 20171710 최근표
@@ -219,7 +220,49 @@ private class GetImageTask extends AsyncTask<String,Void, Bitmap> {
     }
 ```
 
+#### 수정
+
+코드를 전체적으로 최적화함
+
++ 레시피 이미지를 클릭했을때, 레시피 정보를 보여주는 Activity로 넘어가는 OnClickListener생성 
+
++ ```java
+  iv.setOnClickListener(onClickRecipeImage); //해당 line은 73번 line으로 최초 ImageView 위젯 생성시에 setOnClickListener를 설정해주는 부분     
+  
+  //초기화면에서 보여지는 15개의 레피시 사진의 클릭 이벤트를 처리하기 위한 OnClickListener
+      View.OnClickListener onClickRecipeImage =  new View.OnClickListener()
+      {
+          @Override
+          public void onClick(View v)
+          {
+              Toast.makeText(getApplicationContext(),"해당 레시피 출력 기능은 구현 예정", Toast.LENGTH_SHORT).show();
+          }
+      };
+  // 추후에 이 코드를 작성할 예정
+  ```
+
++ 이미지 생성을 돋보기 모양 버튼 클릭이 아닌 OnCreate() 메소드 호출시로 변경
+
++ 이미지 생성중에 사용자의 행동 제한을 위한 프로그래스 바 출력 추가
+
++ ```java
+      private class GetXMLTask extends AsyncTask<String, Void, Document> {
+          ProgressDialog progressDlg; // 추가
+          @Override
+          //누나가 알려준 있어보이는 방법(XMl 파싱하는 동안 프로그래스바를 돌려서 다운받는 동안 행동 제한하기)
+          protected void onPreExecute()
+          {
+              super.onPreExecute();
+              progressDlg = ProgressDialog.show(MainActivity.this, "Wait", "Downloading...");
+          }
+  ```
+
+  <img src="https://user-images.githubusercontent.com/28241676/97110644-aa162300-171d-11eb-9645-ac2012c69b6a.png" alt="Screenshot_1603637722" style="zoom:25%;" />
+
+  
+
 #### 추후 개발 내용
+
 + MainActivity.java의 소스가 너무 더러워서 나중에 머지를 위해 최적화가 필요해 보임
 + 오늘 구현해서 표시한 Image에 대한 onClick 이벤트 처리부분 구현
 + 검색 기능 구현
