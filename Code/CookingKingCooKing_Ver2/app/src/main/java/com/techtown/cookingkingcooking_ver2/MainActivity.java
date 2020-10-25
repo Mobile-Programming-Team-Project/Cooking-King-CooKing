@@ -3,6 +3,8 @@ package com.techtown.cookingkingcooking_ver2;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -37,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView[] images;
     Document doc = null;
 
-    String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/1/5";
+    int imagesIdx = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +53,10 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.recipe3)};
         images = new ImageView[15];
 
+        int idIdx = 0;
         for (int i = 0; i < recipes.length; i++) {
             for (int k = 0; k < 5; k++) {
-                makeImageView(recipes[i], i + k);
+                makeImageView(recipes[i], idIdx++);
             }
         }
     }
@@ -70,10 +74,16 @@ public class MainActivity extends AppCompatActivity {
         images[id] = iv;
     }
 
-    public void onClickSearchBtn(View v){
+    public void onClickSearchBtn(View v)
+    {
         Toast.makeText(this, "검색기능 구현 예정", Toast.LENGTH_SHORT).show();
         GetXMLTask task = new GetXMLTask();
-        task.execute("http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/1/3/");
+        task.execute("http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/1/15/");
+    }
+
+    public void onClickFoodIcon(View v)
+    {
+        Toast.makeText(this,"해당 레시피 출력 기능은 구현 예정", Toast.LENGTH_SHORT).show();
     }
 
     private class GetXMLTask extends AsyncTask<String, Void, Document> {
@@ -140,12 +150,44 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 s += "\n"; //다음 레시피 줄바꿈
+
+                //이미지 파일 셋팅\\
+                temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MAIN");
+                String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
+                new GetImageTask().execute(imageAddress);
             }
 
-            //textview.setText(s);
-            System.out.println(s);
+            System.out.println(s); // 값 출력(추후에 다음 Activity로 넘어 가게끔 수정)
 
             super.onPostExecute(doc);
+        }
+    }
+
+    private class GetImageTask extends AsyncTask<String,Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            Bitmap bmp = null;
+            try {
+                String img_url = strings[0]; //image의 URL 값
+                URL url = new URL(img_url);
+                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return bmp;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            if(imagesIdx > 14) {return;} //최초 화면에 표시되는 15개의(0~14) 사진을 모두 채우면 리턴
+            else {images[imagesIdx++].setImageBitmap(result);}
         }
     }
 }
