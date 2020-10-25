@@ -2,6 +2,7 @@ package com.techtown.cookingkingcooking_ver2;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView[] images;
     Document doc = null;
 
+    String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/1/15/";
     int imagesIdx = 0;
 
     @Override
@@ -59,12 +62,15 @@ public class MainActivity extends AppCompatActivity {
                 makeImageView(recipes[i], idIdx++);
             }
         }
+
+        GetXMLTask task = new GetXMLTask();
+        task.execute(address);
     }
 
     private void makeImageView(LinearLayout root, int id) {
         ImageView iv = new ImageView(this);
-        iv.setImageResource(R.drawable.ic_launcher_foreground); //사진을 추후에 추가(지금은 기본 내장된 사진으로 대체)
         iv.setId(id);
+        iv.setOnClickListener(onClickRecipeImage);
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lp.setMargins(10, 10, 10, 10);
@@ -77,16 +83,29 @@ public class MainActivity extends AppCompatActivity {
     public void onClickSearchBtn(View v)
     {
         Toast.makeText(this, "검색기능 구현 예정", Toast.LENGTH_SHORT).show();
-        GetXMLTask task = new GetXMLTask();
-        task.execute("http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/1/15/");
     }
 
-    public void onClickFoodIcon(View v)
+    //초기화면에서 보여지는 15개의 레피시 사진의 클릭 이벤트를 처리하기 위한 OnClickListener
+    View.OnClickListener onClickRecipeImage =  new View.OnClickListener()
     {
-        Toast.makeText(this,"해당 레시피 출력 기능은 구현 예정", Toast.LENGTH_SHORT).show();
-    }
+        @Override
+        public void onClick(View v)
+        {
+            Toast.makeText(getApplicationContext(),"해당 레시피 출력 기능은 구현 예정", Toast.LENGTH_SHORT).show();
+        }
+    };
 
     private class GetXMLTask extends AsyncTask<String, Void, Document> {
+        ProgressDialog progressDlg;
+
+
+        @Override
+        //누나가 알려준 있어보이는 방법(XMl 파싱하는 동안 프로그래스바를 돌려서 다운받는 동안 행동 제한하기)
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+            progressDlg = ProgressDialog.show(MainActivity.this, "Wait", "Downloading...");
+        }
 
         @Override
         protected Document doInBackground(String... urls) {
@@ -106,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Document doc) {
+            progressDlg.dismiss();
 
             String s = "";
             //row태그가 있는 노드를 찾아서 리스트 형태로 만들어서 반환
@@ -124,8 +144,7 @@ public class MainActivity extends AppCompatActivity {
                 nameList = nameElement.getChildNodes();
                 s += "이름: "+ ((Node) nameList.item(0)).getNodeValue() +"\n";
 
-                NodeList temp; //레시피에 대한 각종
-
+                NodeList temp; //레시피에 대한 각종 데이터를 참조할 NodeList 선언
                 //재료
                 temp = fstElmnt.getElementsByTagName("RCP_PARTS_DTLS");
                 //<RCP_PARTS_DTLS>식재료 나열</RCP_PARTS_DTLS> => <RCP_PARTS_DTLS> 태그의 첫번째 자식노드는 TextNode 이고 TextNode의 값은 나열된 식재료 data의 string 값
@@ -169,8 +188,8 @@ public class MainActivity extends AppCompatActivity {
             Bitmap bmp = null;
             try {
                 String img_url = strings[0]; //image의 URL 값
-                URL url = new URL(img_url);
-                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                URL url = new URL(img_url); //url값 해석
+                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream()); //해당 url의 내용을 bitmap으로 변경
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
