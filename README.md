@@ -163,3 +163,63 @@ private class GetXMLTask extends AsyncTask<String, Void, Document> {
 
 * 초기화면에서 그림을 클릭하면 레시피에 대한 자세한 정보를 볼 수 있는 Activity 출력
 * 검색 시 관련된 정보를 보이는 Activity 출력
+
+
+
+### 2020.10.25, JSY
+
+#### 구현 내용
+
+GetImageTask class를 통한 레시피 image 로딩 기능 구현(최초 화면에서 보여지는 15개의 사진을 음식 사진으로)<br>현재는 돋보기 모양의 searchBtn을 클릭했을 경우에만 출력되도록 함 -> 추후에 onCreate() 메소드 실행시에 출력되게끔 변경 예정
+
+<img src="https://user-images.githubusercontent.com/28241676/97104514-c0a98380-16f7-11eb-9156-bf4e7b850abc.png" alt="Screenshot_1603621109" style="zoom:25%;" />
+
+코드는 MainActivity.java에서 GetImageTask class를 선언해 생성
+
+해당코드는 앞서 생성된 GetXMLTask class의 onPostExecute() 메소드 속 내용<br>Key = "ATT_FILE_NO_MAIN"은  이미지경로(소) 해당 이미지의 주소를(imageAddress) GetImageTask로 넘겨줌
+
+```java
+                //이미지 파일 셋팅\\
+                temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MAIN");
+                String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
+                new GetImageTask().execute(imageAddress);
+```
+
+
+
+위에서 전달받은 값을 다시 url로 해석해서 그 값을 bitmap으로 변경해 각각의 imageView에 매칭하는 class
+
+```java
+private class GetImageTask extends AsyncTask<String,Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            Bitmap bmp = null;
+            try {
+                String img_url = strings[0]; //image의 URL 값
+                URL url = new URL(img_url); //url값 해석
+                bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream()); //해당 url의 내용을 bitmap으로 변경
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return bmp;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            if(imagesIdx > 14) {return;} //최초 화면에 표시되는 15개의(0~14) 사진을 모두 채우면 리턴
+            else {images[imagesIdx++].setImageBitmap(result);}
+        }
+    }
+```
+
+#### 추후 개발 내용
++ MainActivity.java의 소스가 너무 더러워서 나중에 머지를 위해 최적화가 필요해 보임
++ 오늘 구현해서 표시한 Image에 대한 onClick 이벤트 처리부분 구현
++ 검색 기능 구현
