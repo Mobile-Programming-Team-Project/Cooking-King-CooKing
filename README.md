@@ -266,3 +266,233 @@ private class GetImageTask extends AsyncTask<String,Void, Bitmap> {
 + MainActivity.java의 소스가 너무 더러워서 나중에 머지를 위해 최적화가 필요해 보임
 + 오늘 구현해서 표시한 Image에 대한 onClick 이벤트 처리부분 구현
 + 검색 기능 구현
+
+
+
+### 2020.10.26, JSY
+
+#### API에서 받은 레시피를 데이터 베이스화(== Recipe 클래스 작성)
+
+##### Recipe.java
+
+```java
+package com.techtown.cookingkingcooking_ver2;
+
+import android.graphics.Bitmap;
+
+public class Recipe
+{
+    private String name; //메뉴명 "RCP_NM"
+    private String category; // 요리종류 "RCP_PAT2"
+    private String way; //조리방법 "RCP_WAY2"
+    private String foodIngredients; // 요리재료 "RCP_PARTS_DTLS"
+    private String imageMain; // 이미지경로(소) "ATT_FILE_NO_MAIN"
+    private String imageSub; // 이미지경로(대) "ATT_FILE_NO_MK"
+    private String manual; //만드는 법(1~20) "MANUAL01~20"
+    private String[] manualImages; //만드는법에 대한 Image URL
+    private double calorie; //열량 "INFO_ENG"
+    private Bitmap bitmapMain; //이미지경로(소)를 통해 만들어진 비트맵
+    private Bitmap bitmapSub; //이미지경로(소)를 통해 만들어진 비트맵
+
+    public Recipe() {}
+    public Recipe(String name, String category, String way, String foodIngredients, String imageMain, String imageSub, String manual, double calorie)
+    {
+        this.name = name;
+        this.category = category;
+        this.way = way;
+        this.foodIngredients = foodIngredients;
+        this.imageMain = imageMain;
+        this.imageSub = imageSub;
+        this.manual = manual;
+        this.calorie = calorie;
+    }
+
+    public void setName(String name) {this.name = name;}
+    public void setCategory(String category) {this.category = category;}
+    public void setWay(String way) {this.way = way;}
+    public void setFoodIngredients(String foodIngredients) {this.foodIngredients = foodIngredients;}
+    public void setImageMain(String imageMain) {this.imageMain = imageMain;}
+    public void setImageSub(String imageSub) {this.imageSub = imageSub;}
+    public void setManual(String manual) {this.manual = manual;}
+    public void setManualImages(String[] manualImages) {this.manualImages = manualImages;}
+    public void setCalorie(double calorie) {this.calorie = calorie;}
+    public void setBitmapMain(Bitmap bitmapMain) {this.bitmapMain = bitmapMain;}
+    public void setBitmapSub(Bitmap bitmapSub) {this.bitmapSub = bitmapSub;}
+
+    public String getName() {return this.name;}
+    public String getCategory() {return this.category;}
+    public String getWay() {return this.way;}
+    public String getFoodIngredients() {return this.foodIngredients;}
+    public String getImageMain() {return this.imageMain;}
+    public String getImageSub() {return this.imageSub;}
+    public String getManual() {return this.manual;}
+    public double getCalorie() {return this.calorie;}
+    public Bitmap getBitmapMain() {return this.bitmapMain;}
+    public Bitmap getBitmapSub() {return this.bitmapSub;}
+
+    @Override
+    public String toString()
+    {
+        String output = "이름: "+ this.name + "\n\n";
+        output += "요리 분류: " + this.category + "\n\n";
+        output += "조리 방법: " + this.way + "\n\n";
+        output += "칼로리(1인분): " + this.calorie + "Kcal" + "\n\n";
+        output += "재료\n" + this.foodIngredients + "\n\n";
+        output += "조리 순서\n" + this.manual;
+
+        return output;
+    }
+}
+```
+
+해당 클래스를 작성하고 MainActivity.java에서 api의 내용을 받아올때 set***() 메소드를 통해 레시피에 대한 정보를 하나씩 추가하는 방법으로 작성 아래 코드는 MainActivity.java의 GetXMLTask의 API 파싱 부분
+
+```java
+@Override
+        protected void onPostExecute(Document doc) {
+            progressDlg.dismiss();
+            
+            //row태그가 있는 노드를 찾아서 리스트 형태로 만들어서 반환
+            NodeList nodeList = doc.getElementsByTagName("row");
+            //row 태그를 가지는 노드를 찾음, 계층적인 노드 구조를 반환
+
+            for(int i = 0; i< nodeList.getLength(); i++)
+            {
+                recipes[i] = new Recipe();
+
+                //row(레시피)데이터에서 원하는 데이터를 추출하는 과정
+                Node node = nodeList.item(i);
+                Element fstElmnt = (Element) node; //row(레시피)엘리먼트 노드
+
+                //음식이름\\
+                NodeList nameList  = fstElmnt.getElementsByTagName("RCP_NM");
+                Element nameElement = (Element) nameList.item(0);
+                nameList = nameElement.getChildNodes();
+                recipes[i].setName(((Node) nameList.item(0)).getNodeValue());
+
+                NodeList temp; //레시피에 대한 각종 데이터를 참조할 NodeList 선언
+
+                //조리방법\\
+                temp = fstElmnt.getElementsByTagName("RCP_WAY2");
+                recipes[i].setWay(temp.item(0).getChildNodes().item(0).getNodeValue());
+
+                //종류\\
+                temp = fstElmnt.getElementsByTagName("RCP_PAT2");
+                recipes[i].setCategory(temp.item(0).getChildNodes().item(0).getNodeValue());
+
+                //재료\\
+                temp = fstElmnt.getElementsByTagName("RCP_PARTS_DTLS");
+                //<RCP_PARTS_DTLS>식재료 나열</RCP_PARTS_DTLS> => <RCP_PARTS_DTLS> 태그의 첫번째 자식노드는 TextNode 이고 TextNode의 값은 나열된 식재료 data의 string 값
+                recipes[i].setFoodIngredients(temp.item(0).getChildNodes().item(0).getNodeValue());
+
+                //조리순서&조리순서 이미지 URL\\
+                String manual = "";
+                String imgUrls = "";
+                for(int k=1; k<=20; k++)
+                {
+                    String ManualTag = "MANUAL"; //레시피의 조리순서를 담고있는 테그이름(순서는 1~20까지 존재)
+                    String ManualImage = "MANUAL_IMG"; //레시피의 조리순서에 대한 이미지 URL(1~20까지 존재)
+                    if(k < 10) {ManualTag += "0"+k; ManualImage += "0"+k;} //순서에 따라 순서값을 추가
+                    else {ManualTag += k; ManualImage += k;}
+
+                    temp = fstElmnt.getElementsByTagName(ManualImage);
+                    if(temp.item(0).getChildNodes().item(0) != null)
+                    {imgUrls += temp.item(0).getChildNodes().item(0).getNodeValue() +"\n";}
+
+                    temp = fstElmnt.getElementsByTagName(ManualTag);
+                    if(temp.item(0).getChildNodes().item(0) != null)
+                    {manual += temp.item(0).getChildNodes().item(0).getNodeValue() +"\n";}
+                    else {break;}
+                }
+                recipes[i].setManual(manual);
+                recipes[i].setManualImages(imgUrls.split("\n"));
+
+                //열량\\
+                temp = fstElmnt.getElementsByTagName("INFO_ENG");
+                double calorie = Double.parseDouble(temp.item(0).getChildNodes().item(0).getNodeValue());
+                recipes[i].setCalorie(calorie);
+
+                //이미지 파일 셋팅\\
+                temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MAIN"); // 이미지경로(소)
+                String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
+                recipes[i].setImageMain(imageAddress);
+
+                temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MK"); // 이미지경로(대)
+                imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
+                recipes[i].setImageSub(imageAddress);
+
+                new GetImageTask().execute(imageAddress); //이미지를 화면에 출력하기 위한 AsyncTask호출
+            }
+
+           // System.out.println(s); // 값 출력(추후에 다음 Activity로 넘어 가게끔 수정)
+
+            super.onPostExecute(doc);
+        }
+```
+
+이런식으로 데이터베이스화 한 레시피들을 15개의 배열의 형태로 저장한다음 화면에서 사용자가 클릭했을 경우의 코드를 추가
+
+```java
+    //초기화면에서 보여지는 15개의 레피시 사진의 클릭 이벤트를 처리하기 위한 OnClickListener
+    View.OnClickListener onClickRecipeImage =  new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            //Toast.makeText(getApplicationContext(),"해당 레시피 출력 기능은 구현 예정", Toast.LENGTH_SHORT).show();
+            //System.out.println(recipes[v.getId()]);
+            Toast.makeText(getApplicationContext(), recipes[v.getId()].toString(), Toast.LENGTH_LONG).show();
+        }
+    };
+```
+
+
+
+아래 사진은 초기 화면 15개의 레시피 사진을 클릭했을 경우의 이벤트 사진
+
+<img src="https://user-images.githubusercontent.com/28241676/97188062-7226e280-17e6-11eb-8789-a82d5b08eb40.png" alt="Screenshot_1603723435" style="zoom:25%;" />
+
+#### 없는 이미지에 대해서
+
+이미지가 없는 경우에는 drawable파일에 no_img.png파일로 대체함
+
+<img src="https://user-images.githubusercontent.com/28241676/97189572-165d5900-17e8-11eb-9a46-5e2afef56779.png" alt="no_img" style="zoom:25%;" /> <img src="https://user-images.githubusercontent.com/28241676/97190031-9be10900-17e8-11eb-84dc-04d62883a224.png" alt="Screenshot_1603724898" style="zoom:25%;" />
+
+#### 예상치 못한 오류
++ 여러번 코드를 실행해본 결과 null 포인트 에러가 발생함 어디서 발생했는지 찾지 못했음.
+
++ 분명 이미지에 대한 URL이 null값인데 참조하려 해서 그런거 같은데, 해당 부분은 예외처리 되어있음
+
++ 근데 왜 났을까.... 이건 코드 최적화랑 발생했을때 케이스를 제대로 확인해서 처리해야 될듯.
+
++ ```java
+                  //이미지 파일 셋팅\\
+                  temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MAIN"); // 이미지경로(소)
+                  if(temp.item(0).getChildNodes().item(0) != null)
+                  {
+                      String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
+                      recipes[i].setImageMain(imageAddress);
+                      new GetImageTask().execute(imageAddress); //이미지를 화면에 출력하기 위한 AsyncTask호출
+                  }
+  
+                  temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MK"); // 이미지경로(대)
+                  if(temp.item(0).getChildNodes().item(0) != null)
+                  {
+                      String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
+                      recipes[i].setImageSub(imageAddress);
+                  }
+  ```
+
++ 현재 위 처럼 예외처리를 했는데, read_me 쓰면서 또 오류나길래 한번 바꿔봄 이걸로도 또 에러나면 제대로 고쳐봐야 될듯...
+
++ 또한 아래 같은 오류도 나타남(img 파일의 서버가 사라져서(?) 서버로부터 이미지를 받지 못하는 경우 에러가 남)
+
+  ```xml
+  2020-10-27 00:08:06.792 32043-32085/com.techtown.cookingkingcooking_ver2 W/System.err: java.io.FileNotFoundException: http://www.foodsafetykorea.go.kr/uploadimg/20200317/20200317113150_1584412310801.jpg
+  ```
+
+#### 추후 개발
+
++ 위의 사진을 다음 Activity에 띄우는 것을 구현
++ 그에 맞는 XML파일 제작
++ 검색 기능 구현(이거는.... 너무 무섭다....)
