@@ -32,17 +32,19 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Random;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class MainActivity extends AppCompatActivity {
-    LinearLayout[] recipes;
+    LinearLayout[] recipesCategory;
     ImageView[] images;
+    Recipe[] recipes;
     Document doc = null;
 
-    String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/1/15/";
+    String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/";
     int imagesIdx = 0;
 
     @Override
@@ -51,17 +53,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setTitle("요리왕 쿠킹");
 
-        recipes = new LinearLayout[]{findViewById(R.id.recipe1),
+        recipesCategory = new LinearLayout[]{findViewById(R.id.recipe1),
                 findViewById(R.id.recipe2),
                 findViewById(R.id.recipe3)};
         images = new ImageView[15];
+        recipes = new Recipe[15];
 
         int idIdx = 0;
-        for (int i = 0; i < recipes.length; i++) {
+        for (int i = 0; i < recipesCategory.length; i++) {
             for (int k = 0; k < 5; k++) {
-                makeImageView(recipes[i], idIdx++);
+                makeImageView(recipesCategory[i], idIdx++);
             }
         }
+
+        // 1000가지의 음식을 램덤으로 15개를 뽑음(한 숫자를 뽑고 거기서 부터 15개까지)
+        Random random = new Random();
+        int startRow = random.nextInt(986);
+
+        address += startRow + "/" + (startRow+14) + "/";
 
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
@@ -75,6 +84,9 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lp.setMargins(10, 10, 10, 10);
         iv.setLayoutParams(lp);
+
+        iv.getLayoutParams().width = 325;
+        iv.getLayoutParams().height = 325;
 
         root.addView(iv);
         images[id] = iv;
@@ -91,7 +103,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v)
         {
-            Toast.makeText(getApplicationContext(),"해당 레시피 출력 기능은 구현 예정", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(),"해당 레시피 출력 기능은 구현 예정", Toast.LENGTH_SHORT).show();
+            //System.out.println(recipes[v.getId()]);
+            Toast.makeText(getApplicationContext(), recipes[v.getId()].toString(), Toast.LENGTH_LONG).show();
         }
     };
 
@@ -127,56 +141,84 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Document doc) {
             progressDlg.dismiss();
 
-            String s = "";
             //row태그가 있는 노드를 찾아서 리스트 형태로 만들어서 반환
             NodeList nodeList = doc.getElementsByTagName("row");
             //row 태그를 가지는 노드를 찾음, 계층적인 노드 구조를 반환
 
             for(int i = 0; i< nodeList.getLength(); i++)
             {
+                recipes[i] = new Recipe();
+
                 //row(레시피)데이터에서 원하는 데이터를 추출하는 과정
-                s += "레시피 "+(i+1)+" \n";
                 Node node = nodeList.item(i);
                 Element fstElmnt = (Element) node; //row(레시피)엘리먼트 노드
 
+                //음식이름\\
                 NodeList nameList  = fstElmnt.getElementsByTagName("RCP_NM");
                 Element nameElement = (Element) nameList.item(0);
                 nameList = nameElement.getChildNodes();
-                s += "이름: "+ ((Node) nameList.item(0)).getNodeValue() +"\n";
+                recipes[i].setName(((Node) nameList.item(0)).getNodeValue());
 
                 NodeList temp; //레시피에 대한 각종 데이터를 참조할 NodeList 선언
-                //재료
+
+                //조리방법\\
+                temp = fstElmnt.getElementsByTagName("RCP_WAY2");
+                recipes[i].setWay(temp.item(0).getChildNodes().item(0).getNodeValue());
+
+                //종류\\
+                temp = fstElmnt.getElementsByTagName("RCP_PAT2");
+                recipes[i].setCategory(temp.item(0).getChildNodes().item(0).getNodeValue());
+
+                //재료\\
                 temp = fstElmnt.getElementsByTagName("RCP_PARTS_DTLS");
                 //<RCP_PARTS_DTLS>식재료 나열</RCP_PARTS_DTLS> => <RCP_PARTS_DTLS> 태그의 첫번째 자식노드는 TextNode 이고 TextNode의 값은 나열된 식재료 data의 string 값
-                s += "재료 \n"+  temp.item(0).getChildNodes().item(0).getNodeValue() +"\n";
+                recipes[i].setFoodIngredients(temp.item(0).getChildNodes().item(0).getNodeValue());
 
-                //종류
-                temp = fstElmnt.getElementsByTagName("RCP_PAT2");
-                s += "요리종류: "+  temp.item(0).getChildNodes().item(0).getNodeValue() +"\n";
-
-                //조리순서
-                s += "조리순서\n";
+                //조리순서&조리순서 이미지 URL\\
+                String manual = "";
+                String imgUrls = "";
                 for(int k=1; k<=20; k++)
                 {
                     String ManualTag = "MANUAL"; //레시피의 조리순서를 담고있는 테그이름(순서는 1~20까지 존재)
-                    if(k < 10) {ManualTag += "0"+k;} //순서에 따라 순서값을 추가
-                    else {ManualTag += k;}
+                    String ManualImage = "MANUAL_IMG"; //레시피의 조리순서에 대한 이미지 URL(1~20까지 존재)
+                    if(k < 10) {ManualTag += "0"+k; ManualImage += "0"+k;} //순서에 따라 순서값을 추가
+                    else {ManualTag += k; ManualImage += k;}
+
+                    temp = fstElmnt.getElementsByTagName(ManualImage);
+                    if(temp.item(0).getChildNodes().item(0) != null)
+                    {imgUrls += temp.item(0).getChildNodes().item(0).getNodeValue() +"\n";}
 
                     temp = fstElmnt.getElementsByTagName(ManualTag);
                     if(temp.item(0).getChildNodes().item(0) != null)
-                    {s += temp.item(0).getChildNodes().item(0).getNodeValue() +"\n";}
+                    {manual += temp.item(0).getChildNodes().item(0).getNodeValue() +"\n";}
                     else {break;}
                 }
+                recipes[i].setManual(manual);
+                recipes[i].setManualImages(imgUrls.split("\n"));
 
-                s += "\n"; //다음 레시피 줄바꿈
+                //열량\\
+                temp = fstElmnt.getElementsByTagName("INFO_ENG");
+                double calorie = Double.parseDouble(temp.item(0).getChildNodes().item(0).getNodeValue());
+                recipes[i].setCalorie(calorie);
 
                 //이미지 파일 셋팅\\
-                temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MAIN");
-                String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
-                new GetImageTask().execute(imageAddress);
+                temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MAIN"); // 이미지경로(소)
+                if(temp.item(0).getChildNodes().item(0) != null)
+                {
+                    String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
+                    recipes[i].setImageMain(imageAddress);
+                    new GetImageTask().execute(imageAddress); //이미지를 화면에 출력하기 위한 AsyncTask호출
+                }
+
+                temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MK"); // 이미지경로(대)
+                if(temp.item(0).getChildNodes().item(0) != null)
+                {
+                    String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
+                    recipes[i].setImageSub(imageAddress);
+                }
             }
 
-            System.out.println(s); // 값 출력(추후에 다음 Activity로 넘어 가게끔 수정)
+           // System.out.println(s); // 값 출력(추후에 다음 Activity로 넘어 가게끔 수정)
 
             super.onPostExecute(doc);
         }
@@ -205,8 +247,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Bitmap result) {
-            if(imagesIdx > 14) {return;} //최초 화면에 표시되는 15개의(0~14) 사진을 모두 채우면 리턴
-            else {images[imagesIdx++].setImageBitmap(result);}
+            if(result == null) {images[imagesIdx].setImageResource(R.drawable.no_img);} //이미지가 없을 경우를 처리
+            else {images[imagesIdx].setImageBitmap(result);}
+            recipes[imagesIdx++].setBitmapMain(result);
         }
     }
 }
