@@ -663,6 +663,10 @@ public class RecipeInfoActivity extends AppCompatActivity {
 
 printRecipeInfo() 메소드로 간단하게 넘어온 데이터를 출력하는 것으로 구현
 
+해당 Activity에서의 사진
+
+<img src="https://user-images.githubusercontent.com/28241676/97580330-7ea17a00-1a36-11eb-854b-176d68b314e0.png" alt="Screenshot_1603977763" style="zoom:25%;" />
+
 ### 브랜치 마무리
 
 + 현재 여기 까지 시점으로 API_Interworking_Function 브랜치를 main과 머지함
