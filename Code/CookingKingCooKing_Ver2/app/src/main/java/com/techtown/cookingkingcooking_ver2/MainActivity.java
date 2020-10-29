@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
@@ -103,15 +104,21 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v)
         {
-            //Toast.makeText(getApplicationContext(),"해당 레시피 출력 기능은 구현 예정", Toast.LENGTH_SHORT).show();
-            //System.out.println(recipes[v.getId()]);
-            Toast.makeText(getApplicationContext(), recipes[v.getId()].toString(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), recipes[v.getId()].toString(), Toast.LENGTH_LONG).show();
+
+
+            Intent intent = new Intent(getApplicationContext(), RecipeInfoActivity.class);
+
+            Recipe sendRecipe = recipes[v.getId()];
+
+            intent.putExtra("recipeInfo", sendRecipe);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
         }
     };
 
     private class GetXMLTask extends AsyncTask<String, Void, Document> {
         ProgressDialog progressDlg;
-
 
         @Override
         //누나가 알려준 있어보이는 방법(XMl 파싱하는 동안 프로그래스바를 돌려서 다운받는 동안 행동 제한하기)

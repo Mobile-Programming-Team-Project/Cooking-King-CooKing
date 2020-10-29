@@ -1,8 +1,10 @@
 package com.techtown.cookingkingcooking_ver2;
 
 import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class Recipe
+public class Recipe implements Parcelable
 {
     private String name; //메뉴명 "RCP_NM"
     private String category; // 요리종류 "RCP_PAT2"
@@ -17,17 +19,48 @@ public class Recipe
     private Bitmap bitmapSub; //이미지경로(소)를 통해 만들어진 비트맵
 
     public Recipe() {}
-    public Recipe(String name, String category, String way, String foodIngredients, String imageMain, String imageSub, String manual, double calorie)
+
+    public Recipe(Parcel src)
     {
-        this.name = name;
-        this.category = category;
-        this.way = way;
-        this.foodIngredients = foodIngredients;
-        this.imageMain = imageMain;
-        this.imageSub = imageSub;
-        this.manual = manual;
-        this.calorie = calorie;
+        this.name = src.readString();
+        this.category = src.readString();
+        this.way = src.readString();
+        this.foodIngredients = src.readString();
+        this.imageMain = src.readString();
+        this.imageSub = src.readString();
+        this.manual = src.readString();
+        //this.manualImages = src.readStringArray();
+        this.calorie = src.readDouble();
     }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(name);
+        dest.writeString(category);
+        dest.writeString(way);
+        dest.writeString(foodIngredients);
+        dest.writeString(imageMain);
+        dest.writeString(imageSub);
+        dest.writeString(manual);
+        //dest.writeStringArray(manualImages);
+        dest.writeDouble(calorie);
+    }
+
+    public static final Creator<Recipe> CREATOR = new Creator<Recipe>() {
+        @Override
+        public Recipe createFromParcel(Parcel source) {
+            return new Recipe(source);
+        }
+
+        @Override
+        public Recipe[] newArray(int size) {
+            return new Recipe[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {return 0;}
 
     public void setName(String name) {this.name = name;}
     public void setCategory(String category) {this.category = category;}
