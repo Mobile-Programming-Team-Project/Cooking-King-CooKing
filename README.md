@@ -474,7 +474,7 @@ public class Recipe
                       recipes[i].setImageMain(imageAddress);
                       new GetImageTask().execute(imageAddress); //이미지를 화면에 출력하기 위한 AsyncTask호출
                   }
-  
+                
                   temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MK"); // 이미지경로(대)
                   if(temp.item(0).getChildNodes().item(0) != null)
                   {
@@ -496,3 +496,178 @@ public class Recipe
 + 위의 사진을 다음 Activity에 띄우는 것을 구현
 + 그에 맞는 XML파일 제작
 + 검색 기능 구현(이거는.... 너무 무섭다....)
+
+### 2020.10.29, 근표상연
+
+이미지 클릭했을때, 다음 Activity로 넘어가는 코드 작성
+
+Recipe.java에서 Recipe 클래스가 Parcelable를 구현함
+
+```java
+public class Recipe implements Parcelable
+{
+    private String name; //메뉴명 "RCP_NM"
+    private String category; // 요리종류 "RCP_PAT2"
+    private String way; //조리방법 "RCP_WAY2"
+    private String foodIngredients; // 요리재료 "RCP_PARTS_DTLS"
+    private String imageMain; // 이미지경로(소) "ATT_FILE_NO_MAIN"
+    private String imageSub; // 이미지경로(대) "ATT_FILE_NO_MK"
+    private String manual; //만드는 법(1~20) "MANUAL01~20"
+    private String[] manualImages; //만드는법에 대한 Image URL
+    private double calorie; //열량 "INFO_ENG"
+    private Bitmap bitmapMain; //이미지경로(소)를 통해 만들어진 비트맵
+    private Bitmap bitmapSub; //이미지경로(소)를 통해 만들어진 비트맵
+
+    public Recipe() {}
+
+    public Recipe(Parcel src)
+    {
+        this.name = src.readString();
+        this.category = src.readString();
+        this.way = src.readString();
+        this.foodIngredients = src.readString();
+        this.imageMain = src.readString();
+        this.imageSub = src.readString();
+        this.manual = src.readString();
+        //this.manualImages = src.readStringArray();
+        this.calorie = src.readDouble();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(name);
+        dest.writeString(category);
+        dest.writeString(way);
+        dest.writeString(foodIngredients);
+        dest.writeString(imageMain);
+        dest.writeString(imageSub);
+        dest.writeString(manual);
+        //dest.writeStringArray(manualImages);
+        dest.writeDouble(calorie);
+    }
+
+    public static final Creator<Recipe> CREATOR = new Creator<Recipe>() {
+        @Override
+        public Recipe createFromParcel(Parcel source) {
+            return new Recipe(source);
+        }
+
+        @Override
+        public Recipe[] newArray(int size) {
+            return new Recipe[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {return 0;}
+
+    public void setName(String name) {this.name = name;}
+    public void setCategory(String category) {this.category = category;}
+    public void setWay(String way) {this.way = way;}
+    public void setFoodIngredients(String foodIngredients) {this.foodIngredients = foodIngredients;}
+    public void setImageMain(String imageMain) {this.imageMain = imageMain;}
+    public void setImageSub(String imageSub) {this.imageSub = imageSub;}
+    public void setManual(String manual) {this.manual = manual;}
+    public void setManualImages(String[] manualImages) {this.manualImages = manualImages;}
+    public void setCalorie(double calorie) {this.calorie = calorie;}
+    public void setBitmapMain(Bitmap bitmapMain) {this.bitmapMain = bitmapMain;}
+    public void setBitmapSub(Bitmap bitmapSub) {this.bitmapSub = bitmapSub;}
+
+    public String getName() {return this.name;}
+    public String getCategory() {return this.category;}
+    public String getWay() {return this.way;}
+    public String getFoodIngredients() {return this.foodIngredients;}
+    public String getImageMain() {return this.imageMain;}
+    public String getImageSub() {return this.imageSub;}
+    public String getManual() {return this.manual;}
+    public double getCalorie() {return this.calorie;}
+    public Bitmap getBitmapMain() {return this.bitmapMain;}
+    public Bitmap getBitmapSub() {return this.bitmapSub;}
+
+    @Override
+    public String toString()
+    {
+        String output = "이름: "+ this.name + "\n\n";
+        output += "요리 분류: " + this.category + "\n\n";
+        output += "조리 방법: " + this.way + "\n\n";
+        output += "칼로리(1인분): " + this.calorie + "Kcal" + "\n\n";
+        output += "재료\n" + this.foodIngredients + "\n\n";
+        output += "조리 순서\n" + this.manual;
+
+        return output;
+    }
+}
+```
+
+
+
+MainActivity.java에서
+
+```java
+    //초기화면에서 보여지는 15개의 레피시 사진의 클릭 이벤트를 처리하기 위한 OnClickListener
+    View.OnClickListener onClickRecipeImage =  new View.OnClickListener()
+    {
+        @Override
+        public void onClick(View v)
+        {
+            //Toast.makeText(getApplicationContext(), recipes[v.getId()].toString(), Toast.LENGTH_LONG).show();
+
+
+            Intent intent = new Intent(getApplicationContext(), RecipeInfoActivity.class);
+
+            Recipe sendRecipe = recipes[v.getId()];
+
+            intent.putExtra("recipeInfo", sendRecipe);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+    };
+```
+
+다음 액티비티로 넘기는 작업을 함
+
+
+
+또한 두번째 RecipeInfoActivity.java에서
+
+```java
+package com.techtown.cookingkingcooking_ver2;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.widget.Toast;
+
+public class RecipeInfoActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_recipe_info);
+
+        Intent recipeInfo = getIntent();
+        printRecipeInfo(recipeInfo);
+    }
+
+    private void printRecipeInfo(Intent intent)
+    {
+        Recipe info = intent.getParcelableExtra("recipeInfo");
+        Toast.makeText(this, info.toString(), Toast.LENGTH_LONG).show();
+    }
+}
+```
+
+printRecipeInfo() 메소드로 간단하게 넘어온 데이터를 출력하는 것으로 구현
+
+### 브랜치 마무리
+
++ 현재 여기 까지 시점으로 API_Interworking_Function 브랜치를 main과 머지함
++ 추후 개발 기능 2가지
+  + 검색 기능(네이버 검색 API 활용, firebase 데이터베이스 두개를 통해 검색 알고리즘 구현)
+  + 레시피 공유기능(우리들 만의 레시피 양식을 만들고 그것을 XML 파일로 만들어서 Firebase에 올리는(?) 형태로 구현)
++ 가보자~!
+
