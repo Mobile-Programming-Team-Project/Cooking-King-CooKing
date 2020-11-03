@@ -1,5 +1,6 @@
 package com.techtown.cookingkingcooking_ver2;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
@@ -10,7 +11,9 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -30,9 +33,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -75,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
 
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
+
+        SearchNaverTask searchTask = new SearchNaverTask();
+        searchTask.execute("레시피");
     }
 
     private void makeImageView(LinearLayout root, int id) {
@@ -257,6 +267,47 @@ public class MainActivity extends AppCompatActivity {
             if(result == null) {images[imagesIdx].setImageResource(R.drawable.no_img);} //이미지가 없을 경우를 처리
             else {images[imagesIdx].setImageBitmap(result);}
             recipes[imagesIdx++].setBitmapMain(result);
+        }
+    }
+
+    private class SearchNaverTask extends AsyncTask<String,Void, String>
+    {
+        String clientId = "7Yl7TBQh7e_RX5MbFN6c"; //애플리케이션 클라이언트 아이디값"
+        String clientSecret = "qY_AlwOwz_"; //애플리케이션 클라이언트 시크릿값"
+        String apiURL = "https://openapi.naver.com/v1/search/blog.xml?query="; // xml 결과
+        //String apiURL = "https://openapi.naver.com/v1/search/blog?query=" + text;    // json 결과
+
+        @Override
+        protected String doInBackground(String... strings)
+        {
+            String text = null;
+            try {
+                System.out.println(strings[0]);
+                text = URLEncoder.encode(strings[0], "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("검색어 인코딩 실패",e);
+            }
+            apiURL += text+"&sort=sim&display=100&start=100";
+
+            Map<String, String> requestHeaders = new HashMap<>();
+            requestHeaders.put("X-Naver-Client-Id", clientId);
+            requestHeaders.put("X-Naver-Client-Secret", clientSecret);
+
+            ApiSearch apiSearch = new ApiSearch();
+            String responseBody = apiSearch.get(apiURL, requestHeaders);
+
+            return responseBody;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(String result)
+        {
+            System.out.println(result);
         }
     }
 }
