@@ -37,7 +37,8 @@
                     android:layout_height="wrap_content"
                     android:hint="레시피를 검색하세요!"
                     android:gravity="center"
-                    android:layout_weight="3"/>
+                    android:layout_weight="3"
+                    android:maxLines="1"/>
 
                 <ImageButton
                     android:id="@+id/searchBtn"

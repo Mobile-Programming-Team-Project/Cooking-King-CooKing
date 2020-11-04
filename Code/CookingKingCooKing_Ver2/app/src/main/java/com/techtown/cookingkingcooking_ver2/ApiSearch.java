@@ -1,8 +1,14 @@
 package com.techtown.cookingkingcooking_ver2;
 
+import android.content.Context;
 import android.os.Build;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -13,10 +19,48 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class ApiSearch
+public class ApiSearch extends Thread
 {
+    public static String clientId = "7Yl7TBQh7e_RX5MbFN6c"; //애플리케이션 클라이언트 아이디값"
+    public static String clientSecret = "qY_AlwOwz_"; //애플리케이션 클라이언트 시크릿값"
+    public static String searchData; // 검색 키워드
+    public static String searchResult = ""; //검색 결과를 참조하기 위해 선언
+
+    public ApiSearch(String searchData)
+    {this.searchData = searchData;}
+
+    @Override // Thread를 상속하여 실행 함 main 메소드를 실행함으로서, 네이버 검색 api 기능 수행
+    public void run()
+    {
+        super.run();
+        this.main();
+    }
+
+    public static void main()
+    {
+        String text = null;
+        try {
+            text = URLEncoder.encode(searchData, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("검색어 인코딩 실패",e);
+        }
+
+        //String apiURL = "https://openapi.naver.com/v1/search/blog.xml?query="; // xml 결과
+        String apiURL = "https://openapi.naver.com/v1/search/blog?query=";    // json 결과
+
+        apiURL += text+"&sort=sim&display=5&start=10";
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("X-Naver-Client-Id", clientId);
+        requestHeaders.put("X-Naver-Client-Secret", clientSecret);
+
+        String responseBody = get(apiURL, requestHeaders);
+
+        searchResult = parseData(responseBody);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    public String get(String apiUrl, Map<String, String> requestHeaders)
+    private static String get(String apiUrl, Map<String, String> requestHeaders)
     {
         HttpURLConnection con = connect(apiUrl);
         try {
@@ -38,7 +82,7 @@ public class ApiSearch
         }
     }
 
-        public HttpURLConnection connect(String apiUrl){
+        public static HttpURLConnection connect(String apiUrl){
         try {
             URL url = new URL(apiUrl);
             return (HttpURLConnection)url.openConnection();
@@ -50,7 +94,7 @@ public class ApiSearch
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    public String readBody(InputStream body)
+    private static String readBody(InputStream body)
     {
         InputStreamReader streamReader = new InputStreamReader(body);
 
@@ -66,5 +110,38 @@ public class ApiSearch
         } catch (IOException e) {
             throw new RuntimeException("API 응답을 읽는데 실패했습니다.", e);
         }
+    }
+
+    // json형태의 데이터를 파싱하는 메소드
+    // 여러 index들 중 title과 description, link를 뽑아옴
+    private static String parseData(String responseBody)
+    {
+        String title;
+        String description;
+        String link;
+
+        String result = "";
+
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(responseBody.toString());
+            JSONArray jsonArray = jsonObject.getJSONArray("items");
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject item = jsonArray.getJSONObject(i);
+                title = item.getString("title");
+                result += "TITLE : " + title +"\n";
+
+                description = item.getString("description");
+                result += "DESCRIPTION: "+description + "\n";
+
+                link = item.getString("link");
+                result += "LINK: "+link + "\n\n";
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }

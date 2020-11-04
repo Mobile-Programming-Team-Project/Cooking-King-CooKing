@@ -17,6 +17,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -52,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
     Recipe[] recipes;
     Document doc = null;
 
+    EditText searchEditText;
+    ImageButton searchBtn;
+
     String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/";
     int imagesIdx = 0;
 
@@ -66,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.recipe3)};
         images = new ImageView[15];
         recipes = new Recipe[15];
+
+        searchEditText = (EditText) findViewById(R.id.searchEditText);
+        searchBtn = (ImageButton) findViewById(R.id.searchBtn);
 
         int idIdx = 0;
         for (int i = 0; i < recipesCategory.length; i++) {
@@ -83,8 +91,7 @@ public class MainActivity extends AppCompatActivity {
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
 
-        SearchNaverTask searchTask = new SearchNaverTask();
-        searchTask.execute("레시피");
+
     }
 
     private void makeImageView(LinearLayout root, int id) {
@@ -105,7 +112,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickSearchBtn(View v)
     {
-        Toast.makeText(this, "검색기능 구현 예정", Toast.LENGTH_SHORT).show();
+        String searchData = searchEditText.getText().toString();
+
+        if(searchData.getBytes().length > 0)
+        {
+            Thread thread = new ApiSearch(searchData);
+            thread.start();
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {}
+
+            String searchResult = ApiSearch.searchResult;
+            Toast.makeText(this, searchResult, Toast.LENGTH_LONG).show();
+        }
+        else {return;}
     }
 
     //초기화면에서 보여지는 15개의 레피시 사진의 클릭 이벤트를 처리하기 위한 OnClickListener
@@ -114,9 +134,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v)
         {
-            //Toast.makeText(getApplicationContext(), recipes[v.getId()].toString(), Toast.LENGTH_LONG).show();
-
-
             Intent intent = new Intent(getApplicationContext(), RecipeInfoActivity.class);
 
             Recipe sendRecipe = recipes[v.getId()];
@@ -267,47 +284,6 @@ public class MainActivity extends AppCompatActivity {
             if(result == null) {images[imagesIdx].setImageResource(R.drawable.no_img);} //이미지가 없을 경우를 처리
             else {images[imagesIdx].setImageBitmap(result);}
             recipes[imagesIdx++].setBitmapMain(result);
-        }
-    }
-
-    private class SearchNaverTask extends AsyncTask<String,Void, String>
-    {
-        String clientId = "7Yl7TBQh7e_RX5MbFN6c"; //애플리케이션 클라이언트 아이디값"
-        String clientSecret = "qY_AlwOwz_"; //애플리케이션 클라이언트 시크릿값"
-        String apiURL = "https://openapi.naver.com/v1/search/blog.xml?query="; // xml 결과
-        //String apiURL = "https://openapi.naver.com/v1/search/blog?query=" + text;    // json 결과
-
-        @Override
-        protected String doInBackground(String... strings)
-        {
-            String text = null;
-            try {
-                System.out.println(strings[0]);
-                text = URLEncoder.encode(strings[0], "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("검색어 인코딩 실패",e);
-            }
-            apiURL += text+"&sort=sim&display=100&start=100";
-
-            Map<String, String> requestHeaders = new HashMap<>();
-            requestHeaders.put("X-Naver-Client-Id", clientId);
-            requestHeaders.put("X-Naver-Client-Secret", clientSecret);
-
-            ApiSearch apiSearch = new ApiSearch();
-            String responseBody = apiSearch.get(apiURL, requestHeaders);
-
-            return responseBody;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected void onPostExecute(String result)
-        {
-            System.out.println(result);
         }
     }
 }
