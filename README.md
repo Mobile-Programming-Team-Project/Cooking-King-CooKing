@@ -1,5 +1,7 @@
 
 
+
+
 [TOC]
 
 국민대학교 소프트웨어학과 모바일프로그래밍 팀 프로젝트입니다.<br>	팀원<br>		* 20171706 조상연<br>		* 20171710 최근표
@@ -811,3 +813,203 @@ public class ApiSearch
 ```
 
 일단 여기까지 커밋하고 구글 검색 api로 갈아타야 겠음....
+
+
+
+### 2020.11.05, JSY
+#### 검색 api 보완
+
+기존의 네이버 검색 api를 좀더 찾아본 결과: Json 형태로 api를 파싱하면 링크가 잘 나옴 그리고 xml 파일로 받았을 경우에는 링크의 주소를 조금 수정해줘야 함 근데 후자(xml 파싱)보다 전자(json 파싱)이 후작업이 없어서 코드 수정함
+
+MainActivity.java의 Asysnc Task가 너무 많아서 구글의 힘을 빌려 Thread를 상속하는 ApiSearch.java를 작성함
+
+#### apiSearch.java
+
+```java
+package com.techtown.cookingkingcooking_ver2;
+
+import android.content.Context;
+import android.os.Build;
+import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class ApiSearch extends Thread
+{
+    public static String clientId = "7Yl7TBQh7e_RX5MbFN6c"; //애플리케이션 클라이언트 아이디값"
+    public static String clientSecret = "qY_AlwOwz_"; //애플리케이션 클라이언트 시크릿값"
+    public static String searchData; // 검색 키워드
+    public static String searchResult = ""; //검색 결과를 참조하기 위해 선언
+
+    public ApiSearch(String searchData)
+    {this.searchData = searchData;}
+
+    @Override // Thread를 상속하여 실행 함 main 메소드를 실행함으로서, 네이버 검색 api 기능 수행
+    public void run()
+    {
+        super.run();
+        this.main();
+    }
+
+    public static void main()
+    {
+        String text = null;
+        try {
+            text = URLEncoder.encode(searchData, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("검색어 인코딩 실패",e);
+        }
+
+        //String apiURL = "https://openapi.naver.com/v1/search/blog.xml?query="; // xml 결과
+        String apiURL = "https://openapi.naver.com/v1/search/blog?query=";    // json 결과
+
+        apiURL += text+"&sort=sim&display=5&start=10";
+
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("X-Naver-Client-Id", clientId);
+        requestHeaders.put("X-Naver-Client-Secret", clientSecret);
+
+        String responseBody = get(apiURL, requestHeaders);
+
+        searchResult = parseData(responseBody);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private static String get(String apiUrl, Map<String, String> requestHeaders)
+    {
+        HttpURLConnection con = connect(apiUrl);
+        try {
+            con.setRequestMethod("GET");
+            for(Map.Entry<String, String> header :requestHeaders.entrySet()) {
+                con.setRequestProperty(header.getKey(), header.getValue());
+            }
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) { // 정상 호출
+                return readBody(con.getInputStream());
+            } else { // 에러 발생
+                return readBody(con.getErrorStream());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("API 요청과 응답 실패", e);
+        } finally {
+            con.disconnect();
+        }
+    }
+
+        public static HttpURLConnection connect(String apiUrl){
+        try {
+            URL url = new URL(apiUrl);
+            return (HttpURLConnection)url.openConnection();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("API URL이 잘못되었습니다. : " + apiUrl, e);
+        } catch (IOException e) {
+            throw new RuntimeException("연결이 실패했습니다. : " + apiUrl, e);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private static String readBody(InputStream body)
+    {
+        InputStreamReader streamReader = new InputStreamReader(body);
+
+        try (BufferedReader lineReader = new BufferedReader(streamReader)) {
+            StringBuilder responseBody = new StringBuilder();
+
+            String line;
+            while ((line = lineReader.readLine()) != null) {
+                responseBody.append(line);
+            }
+
+            return responseBody.toString();
+        } catch (IOException e) {
+            throw new RuntimeException("API 응답을 읽는데 실패했습니다.", e);
+        }
+    }
+
+    // json형태의 데이터를 파싱하는 메소드
+    // 여러 index들 중 title과 description, link를 뽑아옴
+    private static String parseData(String responseBody)
+    {
+        String title;
+        String description;
+        String link;
+
+        String result = "";
+
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(responseBody.toString());
+            JSONArray jsonArray = jsonObject.getJSONArray("items");
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject item = jsonArray.getJSONObject(i);
+                title = item.getString("title");
+                result += "TITLE : " + title +"\n";
+
+                description = item.getString("description");
+                result += "DESCRIPTION: "+description + "\n";
+
+                link = item.getString("link");
+                result += "LINK: "+link + "\n\n";
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+}
+```
+
+추후에 뽑아온 데이터는 검색 결과를 출력하는 Activity를 만들어서 대충 5~6개 정도를 보여주고 해당 위젯을 누르면 해당 링크로 이동하는 위젯을 만들 예정 검색 기능을 좀던 있어 보이게 만들고 싶은데,,, 현재로선 지금이 최선인듯 나중에 유튜브 검색 api나 우리만의 데이터 베이스도 출력하는 방식도 바램사항
+
+위 코드를 어디서 실행하는가
+
+#### MainActivity.java 113~129 line
+
+````java
+    public void onClickSearchBtn(View v)
+    {
+        String searchData = searchEditText.getText().toString();
+
+        if(searchData.getBytes().length > 0)
+        {
+            Thread thread = new ApiSearch(searchData);
+            thread.start();
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {}
+
+            String searchResult = ApiSearch.searchResult;
+            Toast.makeText(this, searchResult, Toast.LENGTH_LONG).show();
+        }
+        else {return;}
+    }
+````
+
+해당 onClick 이벤트 메소드는 돋보기 모양의 Imagebutton을 클릭 했을 때를 다룸.<br>사용자가 검색하고자 하는 데이터를 입력하면 해당 데이터를 받아 Thread에서 ApiSearch 클래스를 실행함.<br>이후 1초를 기다리고 출력결과를 일단 Toast로 출력하게끔 작성함
+
+#### 아래는 출력 결과를 보여주는 스크린샷
+
+<img src="https://user-images.githubusercontent.com/28241676/98131984-39ca8700-1eff-11eb-8003-023b78db46b0.png" alt="Screenshot_1604503585" style="zoom:25%;" />
+
+<img src="https://user-images.githubusercontent.com/28241676/98131990-3b944a80-1eff-11eb-94bf-b2e836655388.png" alt="Screenshot_1604503594" style="zoom:25%;" />
+
+
+
+#### 추후에
+추후에 검색 결과를 이쁘게 정리하는 Activity를 만들고 각각의 표시되는 위젯을 클릭하면 인터넷창을 띄어 사용자에게 보여주는 기능을 구현하고 검색 기능 브랜치는 종료 예정
