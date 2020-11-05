@@ -15,19 +15,23 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 
 public class ApiSearch extends Thread
 {
-    public static String clientId = "7Yl7TBQh7e_RX5MbFN6c"; //애플리케이션 클라이언트 아이디값"
-    public static String clientSecret = "qY_AlwOwz_"; //애플리케이션 클라이언트 시크릿값"
-    public static String searchData; // 검색 키워드
-    public static String searchResult = ""; //검색 결과를 참조하기 위해 선언
+    private static String clientId = "7Yl7TBQh7e_RX5MbFN6c"; //애플리케이션 클라이언트 아이디값"
+    private static String clientSecret = "qY_AlwOwz_"; //애플리케이션 클라이언트 시크릿값"
+    public static String searchKeyword; // 검색 키워드
+    public static ArrayList<SearchResult> searchResults; //검색 결과를 참조하기 위해 선언
 
     public ApiSearch(String searchData)
-    {this.searchData = searchData;}
+    {
+        this.searchKeyword = searchData;
+        searchResults = new ArrayList<SearchResult>();
+    }
 
     @Override // Thread를 상속하여 실행 함 main 메소드를 실행함으로서, 네이버 검색 api 기능 수행
     public void run()
@@ -40,7 +44,7 @@ public class ApiSearch extends Thread
     {
         String text = null;
         try {
-            text = URLEncoder.encode(searchData, "UTF-8");
+            text = URLEncoder.encode(searchKeyword, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("검색어 인코딩 실패",e);
         }
@@ -48,7 +52,7 @@ public class ApiSearch extends Thread
         //String apiURL = "https://openapi.naver.com/v1/search/blog.xml?query="; // xml 결과
         String apiURL = "https://openapi.naver.com/v1/search/blog?query=";    // json 결과
 
-        apiURL += text+"&sort=sim&display=5&start=10";
+        apiURL += text+"&sort=sim&display=10";
 
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("X-Naver-Client-Id", clientId);
@@ -56,7 +60,7 @@ public class ApiSearch extends Thread
 
         String responseBody = get(apiURL, requestHeaders);
 
-        searchResult = parseData(responseBody);
+        parseData(responseBody);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -114,34 +118,50 @@ public class ApiSearch extends Thread
 
     // json형태의 데이터를 파싱하는 메소드
     // 여러 index들 중 title과 description, link를 뽑아옴
-    private static String parseData(String responseBody)
+    private static void parseData(String responseBody)
     {
         String title;
         String description;
         String link;
 
-        String result = "";
-
         JSONObject jsonObject = null;
+        searchResults.clear(); // 검색 결과 초기화
         try {
             jsonObject = new JSONObject(responseBody.toString());
             JSONArray jsonArray = jsonObject.getJSONArray("items");
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject item = jsonArray.getJSONObject(i);
+
                 title = item.getString("title");
-                result += "TITLE : " + title +"\n";
+                title = dataProcessing(title);
 
                 description = item.getString("description");
-                result += "DESCRIPTION: "+description + "\n";
+                description = dataProcessing(description);
 
                 link = item.getString("link");
-                result += "LINK: "+link + "\n\n";
+
+                searchResults.add(new SearchResult(title, description, link));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
 
+    private static String dataProcessing(String temp)
+    {
+        String result = "";
+        String[] sliceTemp = temp.split("");
+        Boolean flag = false;
+
+        for(int i=0; i<sliceTemp.length; i++)
+        {
+            if(sliceTemp[i].equals("<")) {flag = true; continue;}
+            else if(sliceTemp[i].equals(">")) {flag = false; continue;}
+
+            if(flag) {continue;}
+            else {result += sliceTemp[i];}
+        }
         return result;
     }
 }

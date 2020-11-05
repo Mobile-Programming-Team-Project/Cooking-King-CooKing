@@ -40,6 +40,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -112,18 +113,23 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickSearchBtn(View v)
     {
-        String searchData = searchEditText.getText().toString();
+        String searchKeyword = searchEditText.getText().toString();
 
-        if(searchData.getBytes().length > 0)
+        if(searchKeyword.getBytes().length > 0)
         {
-            Thread thread = new ApiSearch(searchData);
+            Thread thread = new ApiSearch(searchKeyword);
             thread.start();
             try {
                 Thread.sleep(1000);
             } catch (Exception e) {}
 
-            String searchResult = ApiSearch.searchResult;
-            Toast.makeText(this, searchResult, Toast.LENGTH_LONG).show();
+            ArrayList<SearchResult> searchResults = ApiSearch.searchResults;
+
+            Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+            intent.putExtra("KeyWord", searchKeyword);
+            intent.putParcelableArrayListExtra("SearchResults", searchResults);
+
+            startActivity(intent);
         }
         else {return;}
     }

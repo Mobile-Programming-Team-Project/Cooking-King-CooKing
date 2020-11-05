@@ -14,6 +14,7 @@ public class RecipeInfoActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_info);
+        setTitle("요리왕 쿠킹");
 
         Intent recipeInfo = getIntent();
         printRecipeInfo(recipeInfo);
