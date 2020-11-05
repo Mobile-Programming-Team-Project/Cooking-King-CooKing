@@ -1013,3 +1013,238 @@ public class ApiSearch extends Thread
 
 #### 추후에
 추후에 검색 결과를 이쁘게 정리하는 Activity를 만들고 각각의 표시되는 위젯을 클릭하면 인터넷창을 띄어 사용자에게 보여주는 기능을 구현하고 검색 기능 브랜치는 종료 예정
+
+
+
+### 2020.11.06, JSY
+
+#### 구현내용
+
++ 지난 개발 내용에서 검색기능을 온전하게 구현함
++ SearchActivity.java를 작성함 해당 Activity는 MainActivity에서 넘어온 검색 결과를 넘겨 받아서 동적으로 검색 결과를 출력하여 사용자가 검색 결과를 확인하고 마음에 드는 내용을 클릭하면 해당 링크를 통해 인터넷창을 띄어주는 역할을 함(자세한 코드는 후술)
++ 그리고 초기화면에서 그림을 클릭했을때, 해당 레시피의 정보가 나오는 것 처럼, 검색을 했을때, 검색 결과를 다음 Activity로 넘겨주기 위해 SearchResult.java를 작성함 해당 클래스는 json파일에서 파싱한 데이터를(title, description, blogLink)를 멤버변수로 갖고 있고 Parcelable를 구현해서 intent를 통해 Activity를 넘어다닐 수 잇도록 설계함(자세한 코드는 후술)
+
+#### SearchActivity.java
+
+```java
+package com.techtown.cookingkingcooking_ver2;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+
+public class SearchActivity extends AppCompatActivity {
+
+    ArrayList<SearchResult> searchResults;
+
+    TextView title;
+    LinearLayout[] recipeInfoLayouts;
+    TextView[] textViews; // 하이퍼링크 처리 효과를 위해 객체 참조를 위한 array선언
+    LinearLayout resultBox;
+
+    int dummyId = 20; // id값이 겹치는 것을 막는 더미값
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_search);
+        setTitle("요리왕 쿠킹");
+
+        title = (TextView) findViewById(R.id.titleText);
+        resultBox = (LinearLayout) findViewById(R.id.resultBox);
+
+        Intent intent = getIntent();
+        showSearchData(intent); // 전달받은 intent를 해석하는 메소드
+
+        recipeInfoLayouts = new LinearLayout[searchResults.size()];
+        textViews = new TextView[searchResults.size()];
+
+        showSearchResult(); // 해석한 데이터들을 가지고 검색 결과를 출력하는 메소드
+    }
+
+    private void showSearchData(Intent intent)
+    {
+        // 검색 키워드를 받는다.
+        String searchKeyword = intent.getStringExtra("KeyWord");
+        title.setText(searchKeyword + " 검색 결과");
+
+        // api에서 파싱한 데이터 ArrayList를 받는다.
+        searchResults = intent.getParcelableArrayListExtra("SearchResults");
+    }
+
+    private void showSearchResult()
+    {
+        // 검색 결과를 하나의 LinearLayout에 title, description 두개를 담아 scrollView에 담는다.
+
+        // title과 description을 담은 Layout 설정
+        LinearLayout.LayoutParams layoutSetting = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutSetting.setMargins(10, 15, 10, 25);
+
+        // title과 description의 layout_*** 설정
+        LinearLayout.LayoutParams widgetSetting = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        widgetSetting.setMargins(5, 5, 5, 5);
+
+        for(int i=0; i<recipeInfoLayouts.length; i++)
+        {
+            // api에서 파싱한 데이터를 순차적으로 참조함
+            SearchResult sr = searchResults.get(i);
+
+            //title과 description을 담을 LinearLayout을 생성하고 속성을 설정함
+            recipeInfoLayouts[i] = new LinearLayout(this);
+            recipeInfoLayouts[i].setId(i+dummyId);
+            recipeInfoLayouts[i].setOrientation(LinearLayout.VERTICAL);
+            recipeInfoLayouts[i].setOnClickListener(LinkToInternet);
+            recipeInfoLayouts[i].setLayoutParams(layoutSetting);
+
+            //title TextView을 생성하고 속성을 설정함
+            TextView title = new TextView(this);
+            title.setText(sr.getTitle());
+            title.setTextSize(16);
+            title.setTypeface(Typeface.DEFAULT_BOLD);
+            title.setTextColor(0xFF0000FF);
+            title.setLayoutParams(widgetSetting);
+            textViews[i] = title;
+
+            //description TextView을 생성하고 속성을 설정함
+            TextView description = new TextView(this);
+            description.setText(sr.getDescription());
+            description.setTextSize(12);
+            description.setTypeface(Typeface.DEFAULT);
+            description.setLayoutParams(widgetSetting);
+
+            // LinearLayout에 title과 description을 담고 그것을(LinearLayout)을 다시 ScrollView에 담음
+            recipeInfoLayouts[i].addView(title);
+            recipeInfoLayouts[i].addView(description);
+            resultBox.addView(recipeInfoLayouts[i]);
+        }
+    }
+
+    // 해당 검색 결과를(LinearLayout별로 구분되어있음) 클릭했을 경우의 이벤트를 처리
+    // MainActivity에서 넘어온 검색 결과를 index별로 구분해서 해당 데이터의 blogLink를 참조하고
+    // 인터넷 창을 띄우도록 intent를 설정해 놓음(현재로선 최선...)
+    View.OnClickListener LinkToInternet = new View.OnClickListener() {
+        @Override
+        public void onClick(View v)
+        {
+            int idx = v.getId();
+            idx -= dummyId;
+
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(searchResults.get(idx).getBlogLink()));
+            startActivity(intent);
+
+            // 클릭됬던 것은 보라색으로 처리해서 하이퍼링크 효과
+            textViews[idx].setTextColor(0xFF705DA8);
+        }
+    };
+}
+```
+
+코드 자체는 복잡하지 않다. 다만 id값 참조를 위해 dummyId값을 추가해줬음(겹치는걸 막기 위해) 추후에 각종 효과나 UI를 동적으로 보완해야 한다면 복잡해 질 수도 있을거 같음....
+
+#### SearchResult.java
+
+```java
+package com.techtown.cookingkingcooking_ver2;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+// MainActivity에서 검색한 결과를 담는 class
+public class SearchResult implements Parcelable
+{
+    private String title;
+    private String description;
+    private String blogLink;
+
+    public SearchResult(String title, String description, String blogLink)
+    {
+        this.title = title;
+        this.description = description;
+        this.blogLink = blogLink;
+    }
+
+    public SearchResult(Parcel src)
+    {
+        this.title = src.readString();
+        this.description = src.readString();
+        this.blogLink = src.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(title);
+        dest.writeString(description);
+        dest.writeString(blogLink);
+    }
+
+    public static final Creator<SearchResult> CREATOR = new Creator<SearchResult>() {
+        @Override
+        public SearchResult createFromParcel(Parcel source) {
+            return new SearchResult(source);
+        }
+
+        @Override
+        public SearchResult[] newArray(int size) {
+            return new SearchResult[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {return 0;}
+
+    @Override
+    public String toString()
+    {
+        return "TITLE: " + this.title + "\n" +
+                "DESCRIPTION: " + this.description + "\n" +
+                "BlogLink: " + this.blogLink + "\n";
+    }
+
+    public String getTitle() {return this.title;}
+    public String getDescription() {return this.description;}
+    public String getBlogLink() {return this.blogLink;}
+
+    public void setTitle(String title) {this.title = title;}
+    public void setDescription(String description) {this.description = description;}
+    public void setBlogLink(String blogLink) {this.blogLink = blogLink;}
+}
+```
+
+전체적으로 Recipe.java와 형태는 비슷하다. 멤버변수를 갖고 있고 Parcelable를 구현해 필요한 메소드를 재정의하고 set,get함수 구현
+
+#### 실행화면
+
+<img src="https://user-images.githubusercontent.com/28241676/98261172-8083b400-1fc7-11eb-9bcf-dd0a42c14777.png" alt="Screenshot_1604590291" style="zoom:25%;" />
+
+검색 버튼 클릭후 화면 (검색 키워드: "탕수육 레시피")
+
+<img src="https://user-images.githubusercontent.com/28241676/98261242-9a24fb80-1fc7-11eb-9852-439b6796d57e.png" alt="Screenshot_1604589725" style="zoom:25%;" />
+
+해당하는 Link 클릭시 internet창으로 넘어감
+
+<img src="https://user-images.githubusercontent.com/28241676/98261321-add06200-1fc7-11eb-9cc2-3df951e9db3d.png" alt="Screenshot_1604589736" style="zoom:25%;" />
+
+클릭 후 하이퍼링크 효과를 줘서 보라색으로 바뀐 모습
+
+-> 사실 실제로 하이퍼 링크는 아니고 그냥 setTextColor()메소드로 인위적으로 바꾼거...ㅋㅋ
+
+
+#### 추후에
+
++ 여기까지 검색 기능 구현 브랜치 마무리하고 main과 머지 예정
++ 이제 며칠 안남아서 전체적으로 UI 다듬고 해야될 듯
