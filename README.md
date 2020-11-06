@@ -1248,3 +1248,18 @@ public class SearchResult implements Parcelable
 
 + 여기까지 검색 기능 구현 브랜치 마무리하고 main과 머지 예정
 + 이제 며칠 안남아서 전체적으로 UI 다듬고 해야될 듯
+
+### 2020.11.06, 근표, 상연
+
+#### 근표
+
++ fireBase 앱과 연동
++ Recipe.java, RecipeInfoActivity.java, activity_recipe_info.xml  <=> 파이어베이스 적용(?)
++ 레시피 공유 기능
+
+#### 상연
+
++ 본인이 만든부분 UI 깔끔하게 정리
++ 내가짠 코드 최적화
++ Firebase 공부
++ Search_Fuction 브랜치 main과 머지
