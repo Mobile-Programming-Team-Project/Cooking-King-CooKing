@@ -1,6 +1,4 @@
-
-
-
+# 모바일프로그래밍 팀 프로젝트
 
 [TOC]
 
@@ -1263,3 +1261,33 @@ public class SearchResult implements Parcelable
 + 내가짠 코드 최적화
 + Firebase 공부
 + Search_Fuction 브랜치 main과 머지
+
+### 2020.11.08, JSY
+
+#### 한 것
+
++ 파이어 베이스 공부
+
+  관련 URL: https://medium.com/wasd/android-firebase-realtimedb-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0-4f65b360d06e
+
+  위의 URL을 통해서 실습해보고 적용해보면 될듯
+
++ 코드 최적화는 하지 못함
+
++ UI 부분
+
+  + 검색 결과 부분에 수평선으로 구분지어 놓음
+    + <img src="https://user-images.githubusercontent.com/28241676/98467541-401b7480-2219-11eb-9ab2-adf97acb7150.png" alt="Screenshot_1604845321" style="zoom:25%;" />
+  + 앱 아이콘을 변경함
+    + <img src="https://user-images.githubusercontent.com/28241676/98467545-41e53800-2219-11eb-8b35-37bdfc65e303.png" alt="Screenshot_1604845041" style="zoom:25%;" />
+
+  
+
+  
+#### 추후에
+  + 코드 최적화는 주석을 달면서 최대한 깔끔하게 할 예정
+  + 파이어 베이스 연동도 지금 공부 중인데 주중에 회의하면서 같이 작성도 나쁘지 않아 보임
+
+  
+
+  
