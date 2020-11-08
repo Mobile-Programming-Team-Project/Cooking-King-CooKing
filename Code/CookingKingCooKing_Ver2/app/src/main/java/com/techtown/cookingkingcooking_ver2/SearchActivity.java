@@ -26,6 +26,7 @@ public class SearchActivity extends AppCompatActivity {
     LinearLayout[] recipeInfoLayouts;
     TextView[] textViews; // 하이퍼링크 처리 효과를 위해 객체 참조를 위한 array선언
     LinearLayout resultBox;
+    View mainbar;
 
     int dummyId = 20; // id값이 겹치는 것을 막는 더미값
 
@@ -37,6 +38,7 @@ public class SearchActivity extends AppCompatActivity {
 
         title = (TextView) findViewById(R.id.titleText);
         resultBox = (LinearLayout) findViewById(R.id.resultBox);
+        mainbar = findViewById(R.id.bar);
 
         Intent intent = getIntent();
         showSearchData(intent); // 전달받은 intent를 해석하는 메소드
@@ -63,11 +65,15 @@ public class SearchActivity extends AppCompatActivity {
 
         // title과 description을 담은 Layout 설정
         LinearLayout.LayoutParams layoutSetting = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutSetting.setMargins(10, 15, 10, 25);
+        layoutSetting.setMargins(10, 0, 10, 20);
 
         // title과 description의 layout_*** 설정
         LinearLayout.LayoutParams widgetSetting = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         widgetSetting.setMargins(5, 5, 5, 5);
+
+        // 수평선 layout 설정
+        LinearLayout.LayoutParams horizonBar = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1);
+        horizonBar.setMargins(10, 10, 10, 10);
 
         for(int i=0; i<recipeInfoLayouts.length; i++)
         {
@@ -97,10 +103,15 @@ public class SearchActivity extends AppCompatActivity {
             description.setTypeface(Typeface.DEFAULT);
             description.setLayoutParams(widgetSetting);
 
+            View bar = new View(this);
+            bar.setBackground(mainbar.getBackground());
+            bar.setLayoutParams(horizonBar);
+
             // LinearLayout에 title과 description을 담고 그것을(LinearLayout)을 다시 ScrollView에 담음
             recipeInfoLayouts[i].addView(title);
             recipeInfoLayouts[i].addView(description);
             resultBox.addView(recipeInfoLayouts[i]);
+            resultBox.addView(bar);
         }
     }
 

@@ -91,8 +91,6 @@ public class MainActivity extends AppCompatActivity {
 
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
-
-
     }
 
     private void makeImageView(LinearLayout root, int id) {

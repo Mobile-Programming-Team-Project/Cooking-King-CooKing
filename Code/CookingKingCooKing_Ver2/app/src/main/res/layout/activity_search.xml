@@ -20,6 +20,12 @@
         android:textSize="28sp"
         android:textStyle="bold" />
 
+    <View
+        android:id="@+id/bar"
+        android:background="#FF010101"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"/>
+
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
