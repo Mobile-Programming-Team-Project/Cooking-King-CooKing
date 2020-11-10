@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
     String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/";
     int imagesIdx = 0;
+    ImageButton plus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +77,16 @@ public class MainActivity extends AppCompatActivity {
 
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
+
+        plus = (ImageButton) findViewById(R.id.imageButton);
+        plus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,Share_recipe.class);
+                startActivityForResult(intent,101);
+            }
+        });
+
     }
 
     private void makeImageView(LinearLayout root, int id) {

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "76780184851",
+    "firebase_url": "https://cookingkingcooking-ver2.firebaseio.com",
+    "project_id": "cookingkingcooking-ver2",
+    "storage_bucket": "cookingkingcooking-ver2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:76780184851:android:b3427c074e0e8d6e7426e6",
+        "android_client_info": {
+          "package_name": "com.techtown.cookingkingcooking_ver2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "76780184851-0uc4ta0590naotmppip5lb9ccoka8shm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXVDVV7nYZBbe3fY4AEyXhruaskkeI_pg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "76780184851-0uc4ta0590naotmppip5lb9ccoka8shm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

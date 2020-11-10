@@ -7,6 +7,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.IgnoreExtraProperties;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class RecipeInfoActivity extends AppCompatActivity {
 
     @Override
