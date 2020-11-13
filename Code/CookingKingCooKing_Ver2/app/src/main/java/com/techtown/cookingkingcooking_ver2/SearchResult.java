@@ -1,3 +1,12 @@
+/*
+Writer: 조상연
+File Name: SearchResult.java
+Function: MainActivity에서 SearchActivity로 넘어갈때 Intent에 담겨 같이 넘어가는 데이터형
+        Naver search api를 통해 받은 검색 결과로 title, description, blogLink를 가지고 있음
+        Acitivity 사이를 넘어다녀야 하므로 Parcelable을 구현하였다. Parcelable을 구현하기 위한 기본 메소드(생성자, writeToParcel, CREATOR, describeContents)를
+        제외하면 모두 기본으로 작성되어야 하는 get, set 메소드가 전부이다. 그리고 디버그 용으로 편하게 출력하기 위해 toString() 메소드가 잇다.
+ */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import android.os.Parcel;

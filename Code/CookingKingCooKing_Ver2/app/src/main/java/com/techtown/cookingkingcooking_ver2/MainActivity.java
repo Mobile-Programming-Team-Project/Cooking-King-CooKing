@@ -1,3 +1,15 @@
+/*
+Writer: 조상연, 최근표
+File Name: MainActivity.java
+Function: 해당 파일은 메인 화면을 구성할때 구동되는 파일이다.
+        void onCreate(): 해당 class에서 사용되는 멤버 변수들이 초기화되고 초기화면에 보여지는 15개의 레시피 사진들이 표시되는 AsyncTask를 호출함
+        void makeImageView(): 초기화면에서 15개의 레시피가 표시되는데, 각각의 레피시의 Image를 보여기위해 ImageView객체를 동적 생성하는 메소드
+        void onClickSearchBtn(): 사용자가 검색버튼을 눌렀을때의 이벤트 처리를 위한 메소드. 검색 키워드를 가지고 searchAcitivity.class를 호출함
+        class GetXMLTask: onCreate()에서 URL(= address)의 데이터를 XML의 형태로 받아와 필요한 자료구조(Recipe.java) 형태로 가공하는 AsyncTask
+        class GetImageTask: GetXMLTask에서 받아온 각각의 레시피의 이미지 URL을 받아 해당 데이터를 bitmap으로 바꿔주고 그 bitmap을 makeImageView()메소드에서
+                            생성한 ImageView 객체에 알맞게 매칭하는 AsyncTask
+ */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import androidx.annotation.RequiresApi;
@@ -50,16 +62,17 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class MainActivity extends AppCompatActivity {
-    LinearLayout[] recipesCategory;
-    ImageView[] images;
-    Recipe[] recipes;
-    Document doc = null;
+    LinearLayout[] recipesCategory; // size 3으로 선언되며 각각 5개의 imageview 객체를 담는다.
+    ImageView[] images; // 동적으로 생성되는 ImageView 객체를 참조하기 위한 변수
+    Recipe[] recipes; // api에서 받아오는 레시피를 필요한 형태로 가공하고 각각의 레시피에 참조하기 위한 변수
+    Document doc = null; // XML파일을 파싱하기 위한 변수
 
-    EditText searchEditText;
-    ImageButton searchBtn;
+    EditText searchEditText; // 검색 키워드를 getString()하기 위한 editText객체 선언
+    ImageButton searchBtn; // 검색 버튼을 눌렀을때의 이벤트 처리를 위한 Button 객체 선언
 
+    // 식품식약청의 무료 레시피 DB api 주소
     String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/";
-    int imagesIdx = 0;
+    int imagesIdx = 0; // 변수들을 참조하기 위한 공통된 index객체 선언
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setTitle("요리왕 쿠킹");
 
+        // 해당 Activity에서 다루는 위젯을 참조하는 부분\\
         recipesCategory = new LinearLayout[]{findViewById(R.id.recipe1),
                 findViewById(R.id.recipe2),
                 findViewById(R.id.recipe3)};
@@ -76,6 +90,8 @@ public class MainActivity extends AppCompatActivity {
         searchEditText = (EditText) findViewById(R.id.searchEditText);
         searchBtn = (ImageButton) findViewById(R.id.searchBtn);
 
+        /* makeImageView() 메소드를 통해 레시피의 사진을 담은 ImageView를 동적으로 생성함
+        자세한 내용은 makeImageView() 메소드 주석 참고(조상연) */
         int idIdx = 0;
         for (int i = 0; i < recipesCategory.length; i++) {
             for (int k = 0; k < 5; k++) {
@@ -83,21 +99,31 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // 1000가지의 음식을 램덤으로 15개를 뽑음(한 숫자를 뽑고 거기서 부터 15개까지)
+        /* 1000가지의 음식을 램덤으로 15개를 뽑음(한 숫자를 뽑고 거기서 부터 15개까지)
+        해당 api의 주소를 담고 AsyncTask를 상속하는 GetXMLTast 클래스를 실행
+        자세한 내용은 GetXMLTask 클래스 주석 참고(조상연)*/
         Random random = new Random();
         int startRow = random.nextInt(986);
-
         address += startRow + "/" + (startRow+14) + "/";
 
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
     }
 
-    private void makeImageView(LinearLayout root, int id) {
+    /*
+    Writer: 조상연
+    Method: makeImageView()
+    Function: ImageView를 동적으로 생성하여 표시하는 부분
+    api로 얻은 레시피의 사진을 보여주기 위해 생성한다. */
+    private void makeImageView(LinearLayout root, int id)
+    {
         ImageView iv = new ImageView(this);
         iv.setId(id);
+
+        // 레시피를 클릭했을때 이벤트 처리, 자세한 내용은 해당 메소드 참고(조상연)
         iv.setOnClickListener(onClickRecipeImage);
 
+        // ImageView 객체의 Layout 속성을 설정함\\
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         lp.setMargins(10, 10, 10, 10);
         iv.setLayoutParams(lp);
@@ -106,21 +132,28 @@ public class MainActivity extends AppCompatActivity {
         iv.getLayoutParams().height = 325;
 
         root.addView(iv);
-        images[id] = iv;
+        images[id] = iv; // 동적으로 생성된 ImageView 객체를 참조하기위한 array
     }
 
+    /*
+    Writer: 조상연
+    Method: onClickSearchBtn()
+    Function: 초기화면에서 돋보기 모양의 ImageButton의 onClick 이벤트 처리 메소드
+            검색기능은 Naver 검색 api를 이용하였음
+            자세한 Naver search Api는 ApiSearch.java에서 참고(조상연)*/
     public void onClickSearchBtn(View v)
     {
-        String searchKeyword = searchEditText.getText().toString();
+        String searchKeyword = searchEditText.getText().toString(); //사용자가 입력한 검색 키워드
 
         if(searchKeyword.getBytes().length > 0)
         {
             Thread thread = new ApiSearch(searchKeyword);
             thread.start();
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1000); // 검색 결과를 처리하기 위한 Thread 대기 처리
             } catch (Exception e) {}
 
+            // ApiSearch의 멤버 변수 searchResults와 SearchResult.java 참조
             ArrayList<SearchResult> searchResults = ApiSearch.searchResults;
 
             Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
@@ -132,7 +165,11 @@ public class MainActivity extends AppCompatActivity {
         else {return;}
     }
 
-    //초기화면에서 보여지는 15개의 레피시 사진의 클릭 이벤트를 처리하기 위한 OnClickListener
+
+    /*
+    Writer: 조상연
+    Variable: onClickRecipeImage
+    Function: makeImageView를 통해 생성된 imageView 객체의 OnClick 이벤트 처리를 위한 OnClickListener 변수 생성 */
     View.OnClickListener onClickRecipeImage =  new View.OnClickListener()
     {
         @Override
@@ -140,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
         {
             Intent intent = new Intent(getApplicationContext(), RecipeInfoActivity.class);
 
+            // Recipe 객체는 api를 파싱할때 생성되는 객체이다. 자세한 내용은 Recipe.java 참고(조상연)
             Recipe sendRecipe = recipes[v.getId()];
 
             intent.putExtra("recipeInfo", sendRecipe);
@@ -148,11 +186,16 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+
+    /*
+    Writer: 조상연
+    sub Class: GetXMLTask
+    Function: 식품식약처의 레시피 DB를 담고 있는 무료 api를 비동기로 파싱함*/
     private class GetXMLTask extends AsyncTask<String, Void, Document> {
         ProgressDialog progressDlg;
 
         @Override
-        //누나가 알려준 있어보이는 방법(XMl 파싱하는 동안 프로그래스바를 돌려서 다운받는 동안 행동 제한하기)
+        //XMl 파싱하는 동안 프로그래스바를 돌려서 다운받는 동안 행동 제한하기
         protected void onPreExecute()
         {
             super.onPreExecute();
@@ -161,6 +204,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Document doInBackground(String... urls) {
+            /*
+            해당 class를 실행할때 받은 api Address(= urls[0])를 xml형식으로 받아와서 Document 자료형인
+            doc 변수에 저장하고 해당 doc변수를 리턴 리턴된 doc변수는 아래 onPostExrcute() 메소드에서 활용됨 */
             URL url;
             try {
                 url = new URL(urls[0]);
@@ -177,6 +223,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Document doc) {
+            /*
+            doInBackground() 메소드에서 전달받은 Document 변수를 파싱하는 메소드
+            각각의 데이터(레시피)가 <row>태그로 구분되어 지기 대문에 row단위로 끊고
+            <row> 태그에서 필요한 데이터만 뽑아내는 과정이다.*/
+
             progressDlg.dismiss();
 
             //row태그가 있는 노드를 찾아서 리스트 형태로 만들어서 반환
@@ -185,6 +236,8 @@ public class MainActivity extends AppCompatActivity {
 
             for(int i = 0; i< nodeList.getLength(); i++)
             {
+                // Recipe 객체를 참조하기 위해 매번 loop마다 객체 생성
+                // 해당 Recipe 객체의 멤버 변수는 setㅁㅁㅁ() 메소드를 통해 갱신
                 recipes[i] = new Recipe();
 
                 //row(레시피)데이터에서 원하는 데이터를 추출하는 과정
@@ -245,7 +298,10 @@ public class MainActivity extends AppCompatActivity {
                 {
                     String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
                     recipes[i].setImageMain(imageAddress);
-                    new GetImageTask().execute(imageAddress); //이미지를 화면에 출력하기 위한 AsyncTask호출
+
+                    //이미지를 화면에 출력하기 위한 AsyncTask호출
+                    // 자세한 내용은 GetImageTask class 참고(조상연)
+                    new GetImageTask().execute(imageAddress);
                 }
 
                 temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MK"); // 이미지경로(대)
@@ -255,14 +311,18 @@ public class MainActivity extends AppCompatActivity {
                     recipes[i].setImageSub(imageAddress);
                 }
             }
-
-           // System.out.println(s); // 값 출력(추후에 다음 Activity로 넘어 가게끔 수정)
-
             super.onPostExecute(doc);
         }
     }
 
+    /*
+    Writer: 조상연
+    sub Class: GetImageTask
+    Function: GetXMLTask에서 받아오는 각각의 레시피 URL에서 사진을 bitmap의 형식으로 변경하는 class*/
     private class GetImageTask extends AsyncTask<String,Void, Bitmap> {
+        /*
+        URL을 받아서 해당 URL의 사진을 bitmap으로 변환하는 메소드
+        변경된 bitmap은 리턴되어서 onPostExecute()메소드에서 사용됨*/
         @Override
         protected Bitmap doInBackground(String... strings) {
             Bitmap bmp = null;
@@ -285,6 +345,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Bitmap result) {
+            /*
+            이미지를 받아 makeImageView에서 생성한 imageView의 setImageBitmap()을 사용*/
             if(result == null) {images[imagesIdx].setImageResource(R.drawable.no_img);} //이미지가 없을 경우를 처리
             else {images[imagesIdx].setImageBitmap(result);}
             recipes[imagesIdx++].setBitmapMain(result);

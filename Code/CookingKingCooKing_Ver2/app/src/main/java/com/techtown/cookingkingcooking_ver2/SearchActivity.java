@@ -1,3 +1,12 @@
+/*
+Writer: 조상연
+File Name: SearchActivity.java
+Function: main화면에서 사용자가 검색 버튼을 눌렀을때, 보여지는 화면을 표시하는 기능을 함
+        void onCreate(): main에서 넘어온 Intent 객체를 참조하여 검색 결과를 동적으로 생성하도록 메소드들을 실행시킴
+        void showSearchData(): onCreate()에서 호출되며 getIntent()로 받은 Intent를 해석해 각각의 변수를 받음
+        void showSearchResult(): 검색 결과를 표시하는 메소드 동적으로 위젯들을 생성한다. 자세한 내용은 해당 메소드 참고(조상연)
+ */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,13 +29,13 @@ import java.util.ArrayList;
 
 public class SearchActivity extends AppCompatActivity {
 
-    ArrayList<SearchResult> searchResults;
+    ArrayList<SearchResult> searchResults; // main에서 받아오는 검색 결과를 저장하기 위한 arrayList
 
-    TextView title;
-    LinearLayout[] recipeInfoLayouts;
-    TextView[] textViews; // 하이퍼링크 처리 효과를 위해 객체 참조를 위한 array선언
-    LinearLayout resultBox;
-    View mainbar;
+    TextView title; // 검색 키워드를 표시하는 TextView
+    LinearLayout resultBox; // ScrollView에 내장되어 있는 LinearLayout
+    LinearLayout[] recipeInfoLayouts; // 검색 결과를 담을 LinearLayout
+    TextView[] textViews; // 하이퍼링크 처리 효과를 위해 객체 참조를 위한 array
+    View mainbar; // 각각의 검색 결과를 구분하기 위해 수평선을 그어줄 View
 
     int dummyId = 20; // id값이 겹치는 것을 막는 더미값
 
@@ -36,10 +45,12 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
         setTitle("요리왕 쿠킹");
 
+        // 멤버 변수들를 초기화 함\\
         title = (TextView) findViewById(R.id.titleText);
         resultBox = (LinearLayout) findViewById(R.id.resultBox);
         mainbar = findViewById(R.id.bar);
 
+        // main에서 전달받은 Intent를 참고
         Intent intent = getIntent();
         showSearchData(intent); // 전달받은 intent를 해석하는 메소드
 
@@ -50,6 +61,11 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void showSearchData(Intent intent)
+    /*
+    Writer: 조상연
+    Method: showSearchData()
+    Function: main에서 받은 데이터를 key값에 맞게 매칭해 줌
+            검색 결과들은 searchResults라는 이름의 arrayList에 저장됨*/
     {
         // 검색 키워드를 받는다.
         String searchKeyword = intent.getStringExtra("KeyWord");
@@ -60,6 +76,11 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void showSearchResult()
+    /*
+    Writer: 조상연
+    Method: showSearchResult()
+    Function: 검색된 결과를 searchResults의 각각의 요소들의 변수들을 참조하여 위젯들을 동적생성함
+            자세한 내용은 메소드 내부 주석 참고*/
     {
         // 검색 결과를 하나의 LinearLayout에 title, description 두개를 담아 scrollView에 담는다.
 

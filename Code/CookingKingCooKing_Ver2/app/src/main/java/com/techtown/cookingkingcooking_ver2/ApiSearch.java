@@ -1,3 +1,12 @@
+/*
+Writer: 조상연
+File Name: ApiSearch.java
+Function: Naver blog Search api를 구현한 class이다 Thread를 상속하여 비동기적으로 실행되게 끔 설계 함
+        Naver에서 제공하는 기본 예제를 이용해 필요에 맞게 수정하여 사용하였다.
+        생성자에서 검색 키워드를 받아 생성되고 main() 메소드에서 get()메소드를 호출하여 json형태의 데이터를
+        필요한 데이터만 사용할 수 있게끔 가공(parseData())하여 searchResults 변수에 대입함
+ */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import android.content.Context;
@@ -28,6 +37,7 @@ public class ApiSearch extends Thread
     public static ArrayList<SearchResult> searchResults; //검색 결과를 참조하기 위해 선언
 
     public ApiSearch(String searchData)
+    // 생성자 파라미터 값으로 검색 키워드가 온다.
     {
         this.searchKeyword = searchData;
         searchResults = new ArrayList<SearchResult>();
@@ -120,6 +130,7 @@ public class ApiSearch extends Thread
     // 여러 index들 중 title과 description, link를 뽑아옴
     private static void parseData(String responseBody)
     {
+        //검색 결과들 중 제목, 요약, 링크를 담을 변수를 생성
         String title;
         String description;
         String link;
