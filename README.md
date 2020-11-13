@@ -1288,6 +1288,18 @@ public class SearchResult implements Parcelable
   + 코드 최적화는 주석을 달면서 최대한 깔끔하게 할 예정
   + 파이어 베이스 연동도 지금 공부 중인데 주중에 회의하면서 같이 작성도 나쁘지 않아 보임
 
-  
 
-  
+### 2020.11.13, JSY
+#### 주석
+
++ MainActivity.java 주석 추가
++ SearchActivity.java 주석 추가
++ SearchResult.java 주석 추가
++ ApiSearch.java 주석 추가
++ 개발 로그를 달아야 되는데 github commit 이력 보고 일일이 입력 할 생각하니까 가슴이 웅장해 짐...(귀찮아서 못하겠어...)
+
+
+#### 오류?
+<img src="https://user-images.githubusercontent.com/28241676/99078950-9108df80-2602-11eb-8a47-c235a7a5759b.png" alt="image" style="zoom:25%;" />
+
++ 현재 api 서비스 점검 중이라 실행이 안됌.... 저거 만약에 발표때까지 점검 계속 되면 우리 풋고추 되는 거...
