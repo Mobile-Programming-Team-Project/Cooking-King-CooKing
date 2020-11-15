@@ -1305,4 +1305,27 @@ public class SearchResult implements Parcelable
 + 현재 api 서비스 점검 중이라 실행이 안됌.... 저거 만약에 발표때까지 점검 계속 되면 우리 풋고추 되는 거...
 
 ### 2020.11.15, 근표 상연
-근표(파이어베이스) + 기존 main 수동으로 ㅁ저ㅣ
++ 근표(파이어베이스) + 기존 main 수동으로 머지
++ 코드 최종적으로 마무리했다.
+  + FireBase 데이터 읽기/쓰기 구현(근표)
+  + 사용자간 레시피 공유 기능(근표)
+  + api에서 받아오는 레시피 상세히 보여주는 xml, java 완료(상연)
+
+#### 내일 (11.16) 주석 달고 이후에 할일
+
++ 근표
+  + user_Recipe.java
+  + share_Recipe.java
+  + mainAcitivity.java
+  + FirebasePost.java
++ 상연
+  + RecipeInfoActivity.java
+  + mainAcitivity.java
+  + 전체적으로 내가 작성한거 다시한번 확인
++ 주석 달기 완료 되는 내일 이후에(11.17 부터) PPT 빠르게 작성
+  + 움짤로 작성하면 가독성 x100
+  + 화요일에 공동으로 작성할 부분 만들기
+  + 수요일에 개인이 발표할 부분 만들기
+  + 목요일에 최종적으로 확인 후 합치기
+  + 금요일 최종확인 후 제출
+  + 발표 전까지 간간히 발표 연습하기
