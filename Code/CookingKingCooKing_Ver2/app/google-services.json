@@ -1,34 +1,34 @@
 {
   "project_info": {
-    "project_number": "203735688559",
-    "firebase_url": "https://smooth-maxim-294513.firebaseio.com",
-    "project_id": "smooth-maxim-294513",
-    "storage_bucket": "smooth-maxim-294513.appspot.com"
+    "project_number": "76780184851",
+    "firebase_url": "https://cookingkingcooking-ver2.firebaseio.com",
+    "project_id": "cookingkingcooking-ver2",
+    "storage_bucket": "cookingkingcooking-ver2.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:203735688559:android:c5dd583b47e86732b7f49a",
+        "mobilesdk_app_id": "1:76780184851:android:b3427c074e0e8d6e7426e6",
         "android_client_info": {
           "package_name": "com.techtown.cookingkingcooking_ver2"
         }
       },
       "oauth_client": [
         {
-          "client_id": "203735688559-f4i9qt34nj9mnl148p8qd93k7cf4qr5o.apps.googleusercontent.com",
+          "client_id": "76780184851-0uc4ta0590naotmppip5lb9ccoka8shm.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBeBG7cKAnhD2Ns43V8QxQSkw6h61b62EU"
+          "current_key": "AIzaSyCXVDVV7nYZBbe3fY4AEyXhruaskkeI_pg"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "203735688559-f4i9qt34nj9mnl148p8qd93k7cf4qr5o.apps.googleusercontent.com",
+              "client_id": "76780184851-0uc4ta0590naotmppip5lb9ccoka8shm.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

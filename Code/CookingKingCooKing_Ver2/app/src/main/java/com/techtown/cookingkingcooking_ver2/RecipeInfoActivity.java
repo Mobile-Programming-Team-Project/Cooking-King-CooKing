@@ -7,6 +7,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.IgnoreExtraProperties;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class RecipeInfoActivity extends AppCompatActivity {
 
     @Override
@@ -14,7 +20,6 @@ public class RecipeInfoActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_info);
-        setTitle("요리왕 쿠킹");
 
         Intent recipeInfo = getIntent();
         printRecipeInfo(recipeInfo);

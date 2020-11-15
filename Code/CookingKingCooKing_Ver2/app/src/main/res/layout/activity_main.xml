@@ -37,8 +37,7 @@
                     android:layout_height="wrap_content"
                     android:hint="레시피를 검색하세요!"
                     android:gravity="center"
-                    android:layout_weight="3"
-                    android:maxLines="1"/>
+                    android:layout_weight="3"/>
 
                 <ImageButton
                     android:id="@+id/searchBtn"
@@ -116,40 +115,35 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/recipeBox3"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_weight="0.1"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/shareBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:layout_weight="8"
+                    android:background="#00000000"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/plus"
+                    tools:src="@drawable/plus" />
 
                 <TextView
-                    android:id="@+id/recipeBox3Name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:textSize="15dp"
-                    android:textStyle="bold"
-                    android:text="인기 급상승 레시피"/>
-
-                <HorizontalScrollView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/textView2"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:id="@+id/scroll3">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:layout_margin="10dp"
-                        android:id="@+id/recipe3">
-                    </LinearLayout>
-
-                </HorizontalScrollView>
-
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="1"
+                    android:text="나만의 레시피 공유하기!"
+                    android:textAlignment="center"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
         </LinearLayout>
 
     </ScrollView>
-
 
 </LinearLayout>

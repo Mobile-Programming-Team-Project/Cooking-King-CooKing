@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
 
     EditText searchEditText; // 검색 키워드를 getString()하기 위한 editText객체 선언
     ImageButton searchBtn; // 검색 버튼을 눌렀을때의 이벤트 처리를 위한 Button 객체 선언
+    ImageButton shareBtn; // 레시피 게시글 작성하는 버튼 객체 선언
 
     // 식품식약청의 무료 레시피 DB api 주소
     String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/";
@@ -82,13 +83,20 @@ public class MainActivity extends AppCompatActivity {
 
         // 해당 Activity에서 다루는 위젯을 참조하는 부분\\
         recipesCategory = new LinearLayout[]{findViewById(R.id.recipe1),
-                findViewById(R.id.recipe2),
-                findViewById(R.id.recipe3)};
-        images = new ImageView[15];
-        recipes = new Recipe[15];
+                findViewById(R.id.recipe2),};
+        images = new ImageView[10];
+        recipes = new Recipe[10];
 
         searchEditText = (EditText) findViewById(R.id.searchEditText);
         searchBtn = (ImageButton) findViewById(R.id.searchBtn);
+        shareBtn = (ImageButton) findViewById(R.id.shareBtn);
+        shareBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,Share_recipe.class);
+                startActivityForResult(intent,101);
+            }
+        });
 
         /* makeImageView() 메소드를 통해 레시피의 사진을 담은 ImageView를 동적으로 생성함
         자세한 내용은 makeImageView() 메소드 주석 참고(조상연) */
@@ -103,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
         해당 api의 주소를 담고 AsyncTask를 상속하는 GetXMLTast 클래스를 실행
         자세한 내용은 GetXMLTask 클래스 주석 참고(조상연)*/
         Random random = new Random();
-        int startRow = random.nextInt(986);
-        address += startRow + "/" + (startRow+14) + "/";
+        int startRow = random.nextInt(991);
+        address += startRow + "/" + (startRow+9) + "/";
 
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
