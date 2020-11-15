@@ -1303,3 +1303,6 @@ public class SearchResult implements Parcelable
 <img src="https://user-images.githubusercontent.com/28241676/99078950-9108df80-2602-11eb-8a47-c235a7a5759b.png" alt="image" style="zoom:25%;" />
 
 + 현재 api 서비스 점검 중이라 실행이 안됌.... 저거 만약에 발표때까지 점검 계속 되면 우리 풋고추 되는 거...
+
+### 2020.11.15, 근표 상연
+근표(파이어베이스) + 기존 main 수동으로 ㅁ저ㅣ
