@@ -1,3 +1,12 @@
+/*
+Writer: 조상연
+File Name: RecipeInfoActivity.java
+Function: MainActivity api를 통해 생성된 ImageView 객체를 클릭했을때 넘어가는 Activity이다.
+        단순히 데이터를 열거하여 보여주는 형식이고 xml에서 데이터를 보여주기 위해 각각의 TextView객체가 선언되어있다.
+        MainActivity에서 받은 Intent에는 Recipe형의 객체가 담아져 있다. 해당 객체에서 특정 레시피의 데이터를 받아 TextView의 setText()로 정보를 표시한다.
+        그리고 해당 레시피의 image는 MainActivity에서와 같이 AsyncTask를 이용하여 URL형태의 이미지파일을 bitmap형태로 받아 ImageView에 보여준다.
+ */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +33,7 @@ import java.util.Map;
 
 public class RecipeInfoActivity extends AppCompatActivity {
 
+    //레시피의 정보를 보여주기 위해 선언된 위젯 객체들\\
     TextView name;
     TextView category;
     TextView way;
@@ -38,6 +48,7 @@ public class RecipeInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_info);
 
+        //TextView, ImageView 객체 참조\\
         name = (TextView) findViewById(R.id.name);
         category = (TextView) findViewById(R.id.category);
         way = (TextView) findViewById(R.id.way);
@@ -46,6 +57,7 @@ public class RecipeInfoActivity extends AppCompatActivity {
         manual = (TextView) findViewById(R.id.manual);
         image = (ImageView) findViewById(R.id.foodImage);
 
+        // MainActivity에서 받은 intent를 통해 레시피 정보 표시\\
         Intent recipeInfo = getIntent();
         setRecipeInfo(recipeInfo);
     }
@@ -63,6 +75,7 @@ public class RecipeInfoActivity extends AppCompatActivity {
         foodIngredients.setText("재료: \n" + info.getFoodIngredients());
         manual.setText("만드는 방법: \n" + info.getManual());
 
+        // 마지막으로 사진을 표시할때에는 AsyncTask를 사용한다.
         GetImageTask task = new GetImageTask();
         task.execute(info.getImageSub());
 
