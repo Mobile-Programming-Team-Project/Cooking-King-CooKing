@@ -95,7 +95,7 @@
                     android:layout_marginTop="15dp"
                     android:textSize="15dp"
                     android:textStyle="bold"
-                    android:text="셰프 레시피"/>
+                    android:text="회원들의 레시피"/>
 
                 <HorizontalScrollView
                     android:layout_width="wrap_content"

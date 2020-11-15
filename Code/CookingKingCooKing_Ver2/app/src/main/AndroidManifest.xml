@@ -17,6 +17,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity android:name=".Share_recipe"></activity>
+        <activity android:name=".user_Recipe"/>
         <activity android:name=".SearchActivity"></activity>
         <activity android:name=".RecipeInfoActivity" />
         <activity android:name=".MainActivity">

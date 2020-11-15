@@ -12,59 +12,57 @@ Function: 해당 파일은 메인 화면을 구성할때 구동되는 파일이�
 
 package com.techtown.cookingkingcooking_ver2;
 
-import androidx.annotation.RequiresApi;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class MainActivity extends AppCompatActivity {
-    LinearLayout[] recipesCategory; // size 3으로 선언되며 각각 5개의 imageview 객체를 담는다.
-    ImageView[] images; // 동적으로 생성되는 ImageView 객체를 참조하기 위한 변수
-    Recipe[] recipes; // api에서 받아오는 레시피를 필요한 형태로 가공하고 각각의 레시피에 참조하기 위한 변수
+    private DatabaseReference mDatabase;
+
+    LinearLayout recipesCategoryAPI;        // API 데이터에서 받아오는 레시피를 각각 5개의 imageview 객체를 담는다.
+    LinearLayout recipesCategoryFIREBASE;   // FireBase각각 5개의 imageview 객체를 담는다.
+
+    ImageView[] apiImages; // 동적으로 생성되는 ImageView 객체를 참조하기 위한 변수(api에서 받아오는 변수를 참조), 조상연
+    ImageView[] FBImages; // 동적으로 생성되는 ImageView 객체를 참조하기 위한 변수(FireBase에서 받아오는 변수를 참조), 최근표
+
+    Recipe[] apiRecipe; // api에서 받아오는 레시피를 필요한 형태로 가공하고 각각의 레시피에 참조하기 위한 변수, 조상연
+    FirebasePost[] FBRecipe; // FireBase에서 받아옴, 최근표
+
     Document doc = null; // XML파일을 파싱하기 위한 변수
 
     EditText searchEditText; // 검색 키워드를 getString()하기 위한 editText객체 선언
@@ -74,21 +72,29 @@ public class MainActivity extends AppCompatActivity {
     // 식품식약청의 무료 레시피 DB api 주소
     String address = "http://openapi.foodsafetykorea.go.kr/api/b205d0f499cf47098c8e/COOKRCP01/xml/";
     int imagesIdx = 0; // 변수들을 참조하기 위한 공통된 index객체 선언
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("요리왕 쿠킹");
 
+        // 파이어베이스에서 값을 받아오는 객체 초기화 추후에 FBThread로 객체 생성\\
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
         // 해당 Activity에서 다루는 위젯을 참조하는 부분\\
-        recipesCategory = new LinearLayout[]{findViewById(R.id.recipe1),
-                findViewById(R.id.recipe2),};
-        images = new ImageView[10];
-        recipes = new Recipe[10];
+        recipesCategoryAPI = findViewById(R.id.recipe1); // api에서 받아오는 데이터를 표시하는 layout
+        recipesCategoryFIREBASE = findViewById(R.id.recipe2); // firebase에서 받아오는 데이터를 표시하는 layout
+
+        apiImages = new ImageView[5];
+        apiRecipe = new Recipe[5];
+
+        FBImages = new ImageView[5];
+        FBRecipe = new FirebasePost[5];
 
         searchEditText = (EditText) findViewById(R.id.searchEditText);
         searchBtn = (ImageButton) findViewById(R.id.searchBtn);
+
         shareBtn = (ImageButton) findViewById(R.id.shareBtn);
         shareBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,22 +106,23 @@ public class MainActivity extends AppCompatActivity {
 
         /* makeImageView() 메소드를 통해 레시피의 사진을 담은 ImageView를 동적으로 생성함
         자세한 내용은 makeImageView() 메소드 주석 참고(조상연) */
-        int idIdx = 0;
-        for (int i = 0; i < recipesCategory.length; i++) {
-            for (int k = 0; k < 5; k++) {
-                makeImageView(recipesCategory[i], idIdx++);
-            }
+        for (int k = 0; k < 10; k++) {
+            if(k < 5) makeImageView(recipesCategoryAPI, k);
+            else makeImageView(recipesCategoryFIREBASE, k);
         }
 
-        /* 1000가지의 음식을 램덤으로 15개를 뽑음(한 숫자를 뽑고 거기서 부터 15개까지)
+        /* 1000가지의 음식을 램덤으로 5개를 뽑음(한 숫자를 뽑고 거기서 부터 15개까지)
         해당 api의 주소를 담고 AsyncTask를 상속하는 GetXMLTast 클래스를 실행
         자세한 내용은 GetXMLTask 클래스 주석 참고(조상연)*/
         Random random = new Random();
-        int startRow = random.nextInt(991);
-        address += startRow + "/" + (startRow+9) + "/";
+        int startRow = random.nextInt(995);
+        address += startRow + "/" + (startRow+4) + "/";
 
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
+
+        FBThread fbt = new FBThread(mDatabase);
+        fbt.start();
     }
 
     /*
@@ -140,7 +147,12 @@ public class MainActivity extends AppCompatActivity {
         iv.getLayoutParams().height = 325;
 
         root.addView(iv);
-        images[id] = iv; // 동적으로 생성된 ImageView 객체를 참조하기위한 array
+
+        // 동적으로 생성된 ImageView 객체를 참조하기위한 array
+        if(id < 5)
+            apiImages[id] = iv;
+        else
+            FBImages[id-5] = iv;
     }
 
     /*
@@ -180,17 +192,31 @@ public class MainActivity extends AppCompatActivity {
     Function: makeImageView를 통해 생성된 imageView 객체의 OnClick 이벤트 처리를 위한 OnClickListener 변수 생성 */
     View.OnClickListener onClickRecipeImage =  new View.OnClickListener()
     {
+        @SuppressLint("ResourceType")
         @Override
         public void onClick(View v)
         {
-            Intent intent = new Intent(getApplicationContext(), RecipeInfoActivity.class);
+            if(v.getId() < 5)
+            {
+                Intent intent = new Intent(getApplicationContext(), RecipeInfoActivity.class);
+                // Recipe 객체는 api를 파싱할때 생성되는 객체이다. 자세한 내용은 Recipe.java 참고(조상연)
+                Recipe sendRecipe = apiRecipe[v.getId()];
 
-            // Recipe 객체는 api를 파싱할때 생성되는 객체이다. 자세한 내용은 Recipe.java 참고(조상연)
-            Recipe sendRecipe = recipes[v.getId()];
+                intent.putExtra("recipeInfo", sendRecipe);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+            else
+            {
+                Intent intent = new Intent(getApplicationContext(), user_Recipe.class);
+                // Recipe 객체는 api를 파싱할때 생성되는 객체이다. 자세한 내용은 FirebasePost.java 참고(최근표)
+                FirebasePost sendRecipe = FBRecipe[v.getId()-5];
 
-            intent.putExtra("recipeInfo", sendRecipe);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+                intent.putExtra("firebasePost", sendRecipe);
+                intent.putExtra("bitmap", sendRecipe.image_Bitmap);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
         }
     };
 
@@ -246,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 // Recipe 객체를 참조하기 위해 매번 loop마다 객체 생성
                 // 해당 Recipe 객체의 멤버 변수는 setㅁㅁㅁ() 메소드를 통해 갱신
-                recipes[i] = new Recipe();
+                apiRecipe[i] = new Recipe();
 
                 //row(레시피)데이터에서 원하는 데이터를 추출하는 과정
                 Node node = nodeList.item(i);
@@ -256,22 +282,22 @@ public class MainActivity extends AppCompatActivity {
                 NodeList nameList  = fstElmnt.getElementsByTagName("RCP_NM");
                 Element nameElement = (Element) nameList.item(0);
                 nameList = nameElement.getChildNodes();
-                recipes[i].setName(((Node) nameList.item(0)).getNodeValue());
+                apiRecipe[i].setName(((Node) nameList.item(0)).getNodeValue());
 
                 NodeList temp; //레시피에 대한 각종 데이터를 참조할 NodeList 선언
 
                 //조리방법\\
                 temp = fstElmnt.getElementsByTagName("RCP_WAY2");
-                recipes[i].setWay(temp.item(0).getChildNodes().item(0).getNodeValue());
+                apiRecipe[i].setWay(temp.item(0).getChildNodes().item(0).getNodeValue());
 
                 //종류\\
                 temp = fstElmnt.getElementsByTagName("RCP_PAT2");
-                recipes[i].setCategory(temp.item(0).getChildNodes().item(0).getNodeValue());
+                apiRecipe[i].setCategory(temp.item(0).getChildNodes().item(0).getNodeValue());
 
                 //재료\\
                 temp = fstElmnt.getElementsByTagName("RCP_PARTS_DTLS");
                 //<RCP_PARTS_DTLS>식재료 나열</RCP_PARTS_DTLS> => <RCP_PARTS_DTLS> 태그의 첫번째 자식노드는 TextNode 이고 TextNode의 값은 나열된 식재료 data의 string 값
-                recipes[i].setFoodIngredients(temp.item(0).getChildNodes().item(0).getNodeValue());
+                apiRecipe[i].setFoodIngredients(temp.item(0).getChildNodes().item(0).getNodeValue());
 
                 //조리순서&조리순서 이미지 URL\\
                 String manual = "";
@@ -292,20 +318,20 @@ public class MainActivity extends AppCompatActivity {
                     {manual += temp.item(0).getChildNodes().item(0).getNodeValue() +"\n";}
                     else {break;}
                 }
-                recipes[i].setManual(manual);
-                recipes[i].setManualImages(imgUrls.split("\n"));
+                apiRecipe[i].setManual(manual);
+                apiRecipe[i].setManualImages(imgUrls.split("\n"));
 
                 //열량\\
                 temp = fstElmnt.getElementsByTagName("INFO_ENG");
                 double calorie = Double.parseDouble(temp.item(0).getChildNodes().item(0).getNodeValue());
-                recipes[i].setCalorie(calorie);
+                apiRecipe[i].setCalorie(calorie);
 
                 //이미지 파일 셋팅\\
                 temp = fstElmnt.getElementsByTagName("ATT_FILE_NO_MAIN"); // 이미지경로(소)
                 if(temp.item(0).getChildNodes().item(0) != null)
                 {
                     String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
-                    recipes[i].setImageMain(imageAddress);
+                    apiRecipe[i].setImageMain(imageAddress);
 
                     //이미지를 화면에 출력하기 위한 AsyncTask호출
                     // 자세한 내용은 GetImageTask class 참고(조상연)
@@ -316,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
                 if(temp.item(0).getChildNodes().item(0) != null)
                 {
                     String imageAddress = temp.item(0).getChildNodes().item(0).getNodeValue();
-                    recipes[i].setImageSub(imageAddress);
+                    apiRecipe[i].setImageSub(imageAddress);
                 }
             }
             super.onPostExecute(doc);
@@ -355,9 +381,48 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Bitmap result) {
             /*
             이미지를 받아 makeImageView에서 생성한 imageView의 setImageBitmap()을 사용*/
-            if(result == null) {images[imagesIdx].setImageResource(R.drawable.no_img);} //이미지가 없을 경우를 처리
-            else {images[imagesIdx].setImageBitmap(result);}
-            recipes[imagesIdx++].setBitmapMain(result);
+            if(result == null) {apiImages[imagesIdx].setImageResource(R.drawable.no_img);} //이미지가 없을 경우를 처리
+            else {apiImages[imagesIdx].setImageBitmap(result);}
+            apiRecipe[imagesIdx++].setBitmapMain(result);
+        }
+    }
+
+    private class FBThread extends Thread
+    {
+        DatabaseReference df;
+        public FBThread(DatabaseReference mdbrf) {df = mdbrf.child("title_list");}
+
+        @Override
+        public void run() {
+            super.run();
+
+            df.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    int i = 0;
+                    for (DataSnapshot ds : snapshot.getChildren()) {
+                        String bm = ds.child("image_Uri").getValue(String.class);
+                        String material = ds.child("material").getValue(String.class);
+                        String recipe = ds.child("recipe").getValue(String.class);
+                        String title = ds.child("title").getValue(String.class);
+                        String writer = ds.child("writer").getValue(String.class);
+
+                        FBRecipe[i] = new FirebasePost(title, writer, material, recipe, bm);
+                        try {
+                            byte[] encodeByte = Base64.decode(bm, Base64.DEFAULT);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
+                            FBImages[i].setImageBitmap(bitmap);
+                        } catch (Exception e) {
+                            e.getMessage();
+                        }
+                        //Toast.makeText(getApplicationContext(), title + "\n" + writer + "\n" + material + "\n" + recipe + "\n" + uri, Toast.LENGTH_LONG).show();
+                        i++;
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {}
+            });
         }
     }
 }

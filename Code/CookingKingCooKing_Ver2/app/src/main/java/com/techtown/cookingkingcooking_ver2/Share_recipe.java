@@ -5,10 +5,12 @@ import androidx.collection.ArraySet;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -24,6 +26,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +39,8 @@ public class Share_recipe extends AppCompatActivity{
     String material;
     String recipe;
     String food_image;
-    String sort = "title";
+
+    Bitmap bitmap;
 
     ImageView iv; // 요리 이미지 선택
     Button update; // 게시하기 버튼
@@ -105,6 +110,18 @@ public class Share_recipe extends AppCompatActivity{
             Uri selectedImageUri = data.getData();
             iv.setImageURI(selectedImageUri); // 선택된 이미지를 기본이미지로 변경
 
+            // Uri -> bitmap
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(getApplication().getContentResolver(), selectedImageUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // bitmap -> String
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 1 , baos);
+            byte[] bytes = baos.toByteArray();
+            food_image = Base64.encodeToString(bytes, Base64.DEFAULT);
         }
 
     }
@@ -113,7 +130,7 @@ public class Share_recipe extends AppCompatActivity{
         Map<String, Object> childUpdates = new HashMap<>();
         Map<String, Object> postValues = null;
         if(add){
-            FirebasePost post = new FirebasePost(TITLE, writer, material,recipe);
+            FirebasePost post = new FirebasePost(TITLE, writer, material,recipe,food_image);
             postValues = post.toMap();
         }
         childUpdates.put("/title_list/" + TITLE, postValues);
@@ -157,7 +174,4 @@ public class Share_recipe extends AppCompatActivity{
         };
         Query sortbyAge = FirebaseDatabase.getInstance().getReference().child("id_list").orderByChild(sort);
         sortbyAge.addListenerForSingleValueEvent(postListener);*/
-    }
-
-
-
+}
