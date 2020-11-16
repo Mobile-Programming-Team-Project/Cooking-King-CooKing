@@ -386,11 +386,11 @@ public class MainActivity extends AppCompatActivity {
             apiRecipe[imagesIdx++].setBitmapMain(result);
         }
     }
-
+    //Thread 사용
     private class FBThread extends Thread
     {
         DatabaseReference df;
-        public FBThread(DatabaseReference mdbrf) {df = mdbrf.child("title_list");}
+        public FBThread(DatabaseReference mdbrf) {df = mdbrf.child("title_list");} //title_list의 child값을 할당
 
         @Override
         public void run() {
@@ -398,8 +398,12 @@ public class MainActivity extends AppCompatActivity {
 
             df.addValueEventListener(new ValueEventListener() {
                 @Override
+                // Method : onDataChange()
+                // Function : 객체의 값이 update 되어 data의 값이 변화하면
+                // 가져온 데이터를 OnDataChange메소드 안에서 불러온 DataSnapshot을 통해 데이터에 접근하여 FBRecipe배열에 할당해줌.
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     int i = 0;
+                    // dataSnapshot을 getValue를 통해 String형태로 값을 할당.
                     for (DataSnapshot ds : snapshot.getChildren()) {
                         String bm = ds.child("image_Uri").getValue(String.class);
                         String material = ds.child("material").getValue(String.class);
