@@ -420,6 +420,7 @@ public class MainActivity extends AppCompatActivity {
                     
                     // Firebase에 작성된 각각의 node를 참조하여 값을 받음\\
                     for (DataSnapshot ds : snapshot.getChildren()) {
+                        if(i == 5) {break;}
                         String bm = ds.child("image_Uri").getValue(String.class);
                         String material = ds.child("material").getValue(String.class);
                         String recipe = ds.child("recipe").getValue(String.class);
