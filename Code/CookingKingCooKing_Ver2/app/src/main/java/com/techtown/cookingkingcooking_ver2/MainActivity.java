@@ -2,12 +2,16 @@
 Writer: 조상연, 최근표
 File Name: MainActivity.java
 Function: 해당 파일은 메인 화면을 구성할때 구동되는 파일이다.
-        void onCreate(): 해당 class에서 사용되는 멤버 변수들이 초기화되고 초기화면에 보여지는 15개의 레시피 사진들이 표시되는 AsyncTask를 호출함
-        void makeImageView(): 초기화면에서 15개의 레시피가 표시되는데, 각각의 레피시의 Image를 보여기위해 ImageView객체를 동적 생성하는 메소드
-        void onClickSearchBtn(): 사용자가 검색버튼을 눌렀을때의 이벤트 처리를 위한 메소드. 검색 키워드를 가지고 searchAcitivity.class를 호출함
-        class GetXMLTask: onCreate()에서 URL(= address)의 데이터를 XML의 형태로 받아와 필요한 자료구조(Recipe.java) 형태로 가공하는 AsyncTask
+        void onCreate(): 해당 class에서 사용되는 멤버 변수들이 초기화되고 초기화면에 보여지는 10개의 레시피 사진들이 표시되는 AsyncTask를 호출함
+                        10개의 레시피 중 5개는 api를 통해, 5개는 firebase를 통해 표시된다.(-최근표-)
+        void makeImageView(): 초기화면에서 10개의 레시피가 표시되는데, 각각의 레피시의 Image를 보여기위해 ImageView객체를 동적 생성하는 메소드
+        void onClickSearchBtn(): 사용자가 검색버튼을 눌렀을때의 이벤트 처리를 위한 메소드. 검색 키워드를 가지고 searchAcitivity.class를 호출함(-조상연-)
+        class GetXMLTask: onCreate()에서 URL(= address)의 데이터를 XML의 형태로 받아와 필요한 자료구조(Recipe.java) 형태로 가공하는 AsyncTask(-조상연-)
         class GetImageTask: GetXMLTask에서 받아온 각각의 레시피의 이미지 URL을 받아 해당 데이터를 bitmap으로 바꿔주고 그 bitmap을 makeImageView()메소드에서
-                            생성한 ImageView 객체에 알맞게 매칭하는 AsyncTask
+                            생성한 ImageView 객체에 알맞게 매칭하는 AsyncTask(-조상연-)
+        class FBThread: Firebase의 RealTime DataBase에서 사용자들이 입력한 데이터를 받아와 출력하는 Thread 클래스이다. 각각의 레시피에 대한 내용은
+                        FirebasePost 클래스의 형태로 저장되고 해당 객체는 user_Recipe.java로 Activity를 넘어가는 객체로 사용된다.(자세한 내용은   
+                        FireBasePost.java 파일 참고(최근표))(-최근표-)
  */
 
 package com.techtown.cookingkingcooking_ver2;
@@ -61,9 +65,9 @@ public class MainActivity extends AppCompatActivity {
     ImageView[] FBImages; // 동적으로 생성되는 ImageView 객체를 참조하기 위한 변수(FireBase에서 받아오는 변수를 참조), 최근표
 
     Recipe[] apiRecipe; // api에서 받아오는 레시피를 필요한 형태로 가공하고 각각의 레시피에 참조하기 위한 변수, 조상연
-    FirebasePost[] FBRecipe; // FireBase에서 받아옴, 최근표
+    FirebasePost[] FBRecipe; // FireBase에서 받아오는 레시피의 정보를 가공하여 해당 자료형(객체)에 저장하고 참조하기 위한 변수, 최근표
 
-    Document doc = null; // XML파일을 파싱하기 위한 변수
+    Document doc = null; // XML파일을 파싱하기 위한 변수(-조상연-)
 
     EditText searchEditText; // 검색 키워드를 getString()하기 위한 editText객체 선언
     ImageButton searchBtn; // 검색 버튼을 눌렀을때의 이벤트 처리를 위한 Button 객체 선언
@@ -86,15 +90,16 @@ public class MainActivity extends AppCompatActivity {
         recipesCategoryAPI = findViewById(R.id.recipe1); // api에서 받아오는 데이터를 표시하는 layout
         recipesCategoryFIREBASE = findViewById(R.id.recipe2); // firebase에서 받아오는 데이터를 표시하는 layout
 
-        apiImages = new ImageView[5];
-        apiRecipe = new Recipe[5];
+        apiImages = new ImageView[5]; // 해당 변수에 api에서 받아오는 레시피의 이미지가 저장되는 ImageView객체가 저장됨
+        apiRecipe = new Recipe[5];    // 해당 변수에 api에서 받아온 레시피의 정보를 Recipe 객체의 형태로 가공하여 저장함
 
-        FBImages = new ImageView[5];
-        FBRecipe = new FirebasePost[5];
+        FBImages = new ImageView[5]; // 해당 변수에 Firebase에서 받아오는 레시피의 이미지가 저장되는 ImageView객체가 저장됨
+        FBRecipe = new FirebasePost[5]; // 해당 변수에 Firebase에서 받아온 레시피의 정보를 FirebasePost 객체의 형태로 가공하여 저장함
 
         searchEditText = (EditText) findViewById(R.id.searchEditText);
         searchBtn = (ImageButton) findViewById(R.id.searchBtn);
 
+        // 공유하기 버튼을 클릭했을 때의 이벤트를 처리하기 위한 onClickListener, 최근표\\
         shareBtn = (ImageButton) findViewById(R.id.shareBtn);
         shareBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,16 +116,16 @@ public class MainActivity extends AppCompatActivity {
             else makeImageView(recipesCategoryFIREBASE, k);
         }
 
-        /* 1000가지의 음식을 램덤으로 5개를 뽑음(한 숫자를 뽑고 거기서 부터 15개까지)
+        /* 1000가지의 음식을 램덤으로 5개를 뽑음(한 숫자를 뽑고 거기서 부터 5개까지)
         해당 api의 주소를 담고 AsyncTask를 상속하는 GetXMLTast 클래스를 실행
         자세한 내용은 GetXMLTask 클래스 주석 참고(조상연)*/
         Random random = new Random();
         int startRow = random.nextInt(995);
-        address += startRow + "/" + (startRow+4) + "/";
-
+        address += startRow + "/" + (startRow+4) + "/"; //api URL에 추가
         GetXMLTask task = new GetXMLTask();
         task.execute(address);
 
+        // Firebase에서 값을 가져오기 위한 Thread class 생성 후 실행, 최근표\\
         FBThread fbt = new FBThread(mDatabase);
         fbt.start();
     }
@@ -202,14 +207,14 @@ public class MainActivity extends AppCompatActivity {
                 // Recipe 객체는 api를 파싱할때 생성되는 객체이다. 자세한 내용은 Recipe.java 참고(조상연)
                 Recipe sendRecipe = apiRecipe[v.getId()];
 
-                intent.putExtra("recipeInfo", sendRecipe);
+                intent.putExtra("recipeInfo", sendRecipe); // Recipe class 자체를 다음 Activity로 넘겨줌
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
             else
             {
                 Intent intent = new Intent(getApplicationContext(), user_Recipe.class);
-                // Recipe 객체는 api를 파싱할때 생성되는 객체이다. 자세한 내용은 FirebasePost.java 참고(최근표)
+                // FirebasePost 클래스는 api를 파싱할때 생성되는 객체이다. 자세한 내용은 FirebasePost.java 참고(최근표)
                 FirebasePost sendRecipe = FBRecipe[v.getId()-5];
 
                 intent.putExtra("firebasePost", sendRecipe);
@@ -229,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
         ProgressDialog progressDlg;
 
         @Override
-        //XMl 파싱하는 동안 프로그래스바를 돌려서 다운받는 동안 행동 제한하기
+        //XML 데이터를 파싱하는 동안 프로그래스바를 돌려서 다운받는 동안 행동 제한하기
         protected void onPreExecute()
         {
             super.onPreExecute();
@@ -386,24 +391,29 @@ public class MainActivity extends AppCompatActivity {
             apiRecipe[imagesIdx++].setBitmapMain(result);
         }
     }
-    //Thread 사용
+
+    /*
+    Writer: 최근표
+    sub Class: FBThread
+    Function: Firebase에서 레피시 정보를 가져오도록 하는 Thread class*/
     private class FBThread extends Thread
     {
-        DatabaseReference df;
-        public FBThread(DatabaseReference mdbrf) {df = mdbrf.child("title_list");} //title_list의 child값을 할당
+        DatabaseReference df; // 각각의 레시피 정보를 참조하기 위한 변수
+
+        //생성자\\
+        public FBThread(DatabaseReference mdbrf) {df = mdbrf.child("title_list");}
 
         @Override
         public void run() {
             super.run();
 
+            // Firebase 내부의 값을 참조하기 위해서 addValueEvenListener 생성\\
             df.addValueEventListener(new ValueEventListener() {
                 @Override
-                // Method : onDataChange()
-                // Function : 객체의 값이 update 되어 data의 값이 변화하면
-                // 가져온 데이터를 OnDataChange메소드 안에서 불러온 DataSnapshot을 통해 데이터에 접근하여 FBRecipe배열에 할당해줌.
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    int i = 0;
-                    // dataSnapshot을 getValue를 통해 String형태로 값을 할당.
+                    int i = 0; // FBRecipe와 FBImages의 요소들에 접근하기 위한 index변수
+                    
+                    // Firebase에 작성된 각각의 node를 참조하여 값을 받음\\
                     for (DataSnapshot ds : snapshot.getChildren()) {
                         String bm = ds.child("image_Uri").getValue(String.class);
                         String material = ds.child("material").getValue(String.class);
@@ -411,7 +421,10 @@ public class MainActivity extends AppCompatActivity {
                         String title = ds.child("title").getValue(String.class);
                         String writer = ds.child("writer").getValue(String.class);
 
+                        // 값을 모두 받아 FirebasePost 객체 생성\\
                         FBRecipe[i] = new FirebasePost(title, writer, material, recipe, bm);
+                        
+                        // String 형태의 bitmap을 bitmap으로 변경하는 코드\\
                         try {
                             byte[] encodeByte = Base64.decode(bm, Base64.DEFAULT);
                             Bitmap bitmap = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
@@ -419,11 +432,9 @@ public class MainActivity extends AppCompatActivity {
                         } catch (Exception e) {
                             e.getMessage();
                         }
-                        //Toast.makeText(getApplicationContext(), title + "\n" + writer + "\n" + material + "\n" + recipe + "\n" + uri, Toast.LENGTH_LONG).show();
-                        i++;
+                        i++; // 인덱스 값 갱신
                     }
                 }
-
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {}
             });

@@ -11,16 +11,14 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
 import java.util.HashMap;
 import java.util.Map;
 
-//FirebasePose.java : 파이어베이스 데이터베이스에 저장할 값들을 객체에 저장하여 올리기위한 객체생성 class
 @IgnoreExtraProperties
 public class FirebasePost implements Parcelable {
-    public String title; // 제목
-    public String writer; // 작성자
-    public String material; // 재료
-    public String recipe; // 요리과정
-    public String image_Bitmap; // 사진
+    public String title;
+    public String writer;
+    public String material;
+    public String recipe;
+    public String image_Bitmap;
 
-    // 값 지정
     public FirebasePost(String title, String writer, String material, String recipe,String image_Bitmap) {
         this.title = title;
         this.writer = writer;
@@ -29,8 +27,15 @@ public class FirebasePost implements Parcelable {
         this.image_Bitmap = image_Bitmap;
     }
 
-    //Method : writeToParcel()
-    //Function : 객체에 담긴 데이터를 직렬화하여 dest에 순차적으로 class 내부에 있는 데이터를 저장해주는 함수
+    public FirebasePost(Parcel src)
+    {
+        this.title = src.readString();
+        this.writer = src.readString();
+        this.material = src.readString();
+        this.recipe = src.readString();
+        this.image_Bitmap = src.readString();
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
@@ -41,19 +46,9 @@ public class FirebasePost implements Parcelable {
         dest.writeString(image_Bitmap);
     }
 
-    // 객체를 받았을 때 직렬화를 풀어주는 기능
-    public FirebasePost(Parcel src)
-    {
-        this.title = src.readString();
-        this.writer = src.readString();
-        this.material = src.readString();
-        this.recipe = src.readString();
-        this.image_Bitmap = src.readString();
-    }
     @Override
     public int describeContents() {return 0;}
 
-    //parcel된 객체데이터를 저장하는 Creator
     public static final Creator<FirebasePost> CREATOR = new Creator<FirebasePost>() {
         @Override
         public FirebasePost createFromParcel(Parcel source) {
@@ -66,7 +61,6 @@ public class FirebasePost implements Parcelable {
         }
     };
 
-    // result HashMap에 제목, 작성자 등의 값을 key,value 값으로 넣어줌
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();

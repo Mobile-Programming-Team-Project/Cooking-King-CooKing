@@ -1,3 +1,12 @@
+/*
+Writer: 조상연
+File Name: Recipe.java
+Function: MainActivity에서 RecipeInfoActivity로 넘어갈때 Intent에 담겨 같이 넘어가는 데이터형
+        식약청의 무료 레시피 DB api에서 받아온 데이터를 String, double, Bitmap의 자료형으로 받아 대입한다.
+        Acitivity 사이를 넘어다녀야 하므로 Parcelable을 구현하였다. Parcelable을 구현하기 위한 기본 메소드(생성자, writeToParcel, CREATOR, describeContents)를
+        제외하면 모두 기본으로 작성되어야 하는 get, set 메소드가 전부이다. 그리고 디버그 용으로 편하게 출력하기 위해 toString() 메소드가 있다.
+ */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import android.graphics.Bitmap;
@@ -6,6 +15,7 @@ import android.os.Parcelable;
 
 public class Recipe implements Parcelable
 {
+    //멤버 변수들\\
     private String name; //메뉴명 "RCP_NM"
     private String category; // 요리종류 "RCP_PAT2"
     private String way; //조리방법 "RCP_WAY2"
