@@ -67,13 +67,12 @@ public class RecipeInfoActivity extends AppCompatActivity {
         Recipe info = intent.getParcelableExtra("recipeInfo");
         //Toast.makeText(this, info.toString(), Toast.LENGTH_LONG).show();
 
-        name.setText(info.getName() +"\n");
-        name.setGravity(View.TEXT_ALIGNMENT_CENTER);
-        category.setText("요리종류: " + info.getCategory());
-        way.setText("조리방법: " + info.getWay());
-        calorie.setText("칼로리(1인 기준): "+ info.getCalorie());
-        foodIngredients.setText("재료: \n" + info.getFoodIngredients());
-        manual.setText("만드는 방법: \n" + info.getManual());
+        name.setText(info.getName());
+        category.setText(info.getCategory());
+        way.setText(info.getWay());
+        calorie.setText(info.getCalorie()+"Kcal");
+        foodIngredients.setText(info.getFoodIngredients());
+        manual.setText(info.getManual());
 
         // 마지막으로 사진을 표시할때에는 AsyncTask를 사용한다.
         GetImageTask task = new GetImageTask();

@@ -1,3 +1,9 @@
+/* Writer : 최근표
+ File_Name : user_Recipe.java
+ Function : 회원들이 직접 레시피를 게시하면 등록되는 화면을 나타내는 기능
+ MainActivity에서 넘어온 FirebasePost 객체를 인텐트를 통해 값을 받아 화면에 데이터를 표시함
+ Image는 String형으로 받아 bitmap형태로 변환하여 유저에게 보여줌. */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import android.content.Intent;
@@ -15,8 +21,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.w3c.dom.Text;
-
-// user_Recipe.java : 회원들이 직접 레시피를 게시하면 등록되는 화면을 나타내는 기능
 
 public class user_Recipe extends AppCompatActivity {
 

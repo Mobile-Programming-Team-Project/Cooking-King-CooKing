@@ -52,7 +52,7 @@ public class ApiSearch extends Thread
 
     public static void main()
     {
-        String text = null;
+        String text = null; // api URL을 담을 text 변수 선언
         try {
             text = URLEncoder.encode(searchKeyword, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -62,12 +62,13 @@ public class ApiSearch extends Thread
         //String apiURL = "https://openapi.naver.com/v1/search/blog.xml?query="; // xml 결과
         String apiURL = "https://openapi.naver.com/v1/search/blog?query=";    // json 결과
 
-        apiURL += text+"&sort=sim&display=10";
+        apiURL += text+"&sort=sim&display=10"; // 정확도 순, 기본 5개+10추가로 표시
 
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("X-Naver-Client-Id", clientId);
         requestHeaders.put("X-Naver-Client-Secret", clientSecret);
 
+        // 검색 결과가 json형태로 string 자료형으로 저장됨
         String responseBody = get(apiURL, requestHeaders);
 
         parseData(responseBody);
@@ -158,7 +159,8 @@ public class ApiSearch extends Thread
             e.printStackTrace();
         }
     }
-
+    
+    // 불필요한 문자 제가 하는 메소드(ex <br> 같은 html 테그)
     private static String dataProcessing(String temp)
     {
         String result = "";

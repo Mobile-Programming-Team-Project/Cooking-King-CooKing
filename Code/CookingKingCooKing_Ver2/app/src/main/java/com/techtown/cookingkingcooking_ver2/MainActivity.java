@@ -411,6 +411,11 @@ public class MainActivity extends AppCompatActivity {
             df.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    // Method : onDataChange()
+                    // Function : 객체의 값이 update 되어 data의 값이 변화하면
+                    /* 가져온 데이터를 OnDataChange메소드 안에서 불러온 DataSnapshot을 통해
+                     데이터에 접근하여 FBRecipe배열에 할당해줌.*/
+
                     int i = 0; // FBRecipe와 FBImages의 요소들에 접근하기 위한 index변수
                     
                     // Firebase에 작성된 각각의 node를 참조하여 값을 받음\\

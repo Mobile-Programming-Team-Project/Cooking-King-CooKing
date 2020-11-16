@@ -1,3 +1,8 @@
+/*Writer : 최근표
+ File_Name : FirebasePose.java
+ Function : : 파이어베이스 데이터베이스에 저장할 값들을 객체에 저장하여 올리기위한 객체생성 class
+ class의 값을 담기위해 Parcel을 사용했고, HashMap의 형태로 객체를 저장함. */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import android.graphics.Bitmap;
@@ -11,7 +16,6 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
 import java.util.HashMap;
 import java.util.Map;
 
-//FirebasePose.java : 파이어베이스 데이터베이스에 저장할 값들을 객체에 저장하여 올리기위한 객체생성 class
 @IgnoreExtraProperties
 public class FirebasePost implements Parcelable {
     public String title; // 제목

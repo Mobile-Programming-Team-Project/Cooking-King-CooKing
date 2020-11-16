@@ -1,3 +1,9 @@
+/* Writer : 최근표
+ File_Name : Share_recipe.java
+ Function : 회원들이 직접 레시피를 게시하여 공유할 수 있게해주는 기능을 구현.
+ ImageView.setOnClickListener()를 통해 내장 앨범에 접근하고, onActivityResult()로 기본이미지를 선택된 이미지로 변경함.
+ EditText에 입력된 값들은 postFirebaseDatabase()를 통해 HashMap의 형태로 파이어베이스 데이터베이스에 저장됨. */
+
 package com.techtown.cookingkingcooking_ver2;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,9 +37,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-// Share_recipe.java : 회원들이 자신들의 레시피를 입력하여 공유 할 수 있는 기능을 구현
-
 
 public class Share_recipe extends AppCompatActivity {
     private DatabaseReference mPostReference;
