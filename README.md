@@ -1329,3 +1329,9 @@ public class SearchResult implements Parcelable
   + 목요일에 최종적으로 확인 후 합치기
   + 금요일 최종확인 후 제출
   + 발표 전까지 간간히 발표 연습하기
+
+### 2020.11.16, 근표 상연
+
+개발 완료
+
++ 이제 ppt 만들고 read me 작성하고 하면서 마무리 하면 될듯
